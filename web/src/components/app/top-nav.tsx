@@ -1,0 +1,67 @@
+import { LayoutDashboard, Rocket, Settings2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { NavLink } from "react-router-dom"
+import { LanguageSwitcher } from "@/components/app/language-switcher"
+import { ThemeSwitcher } from "@/components/app/theme-switcher"
+import { cn } from "@/lib/utils"
+import type { ThemeMode } from "@/types/app"
+
+interface TopNavProps {
+  isInitRoute: boolean
+  themeMode: ThemeMode
+  setThemeMode: (mode: ThemeMode) => void
+}
+
+export function TopNav({ isInitRoute, themeMode, setThemeMode }: TopNavProps) {
+  const { t } = useTranslation()
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+            <Rocket className="h-4 w-4" />
+          </div>
+          <p className="hidden text-lg font-bold tracking-tight md:block">{t("title")}</p>
+        </div>
+
+        {!isInitRoute ? (
+          <nav className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border bg-background/50 p-1 shadow-sm backdrop-blur-sm">
+            <NavLink
+              to="/tasks"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-all hover:bg-muted hover:text-foreground",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground"
+                    : "text-muted-foreground"
+                )
+              }
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>{t("nav.tasks")}</span>
+            </NavLink>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-all hover:bg-muted hover:text-foreground",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground"
+                    : "text-muted-foreground"
+                )
+              }
+            >
+              <Settings2 className="h-4 w-4" />
+              <span>{t("nav.settings")}</span>
+            </NavLink>
+          </nav>
+        ) : null}
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeSwitcher themeMode={themeMode} setThemeMode={setThemeMode} />
+        </div>
+      </div>
+    </header>
+  )
+}

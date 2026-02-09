@@ -1,0 +1,182 @@
+{
+  "title": "TG Download Console",
+  "nav": {
+    "tasks": "任务列表",
+    "settings": "系统设置"
+  },
+  "theme": {
+    "system": "跟随系统",
+    "light": "浅色",
+    "dark": "深色"
+  },
+  "header": {
+    "initialized": "已初始化",
+    "uninitialized": "未初始化",
+    "active_tasks": "进行中任务：{{count}}",
+    "refresh": "刷新任务"
+  },
+  "tasks": {
+    "create": {
+      "title": "创建任务",
+      "link_label": "Telegram 消息链接",
+      "link_placeholder": "https://t.me/channel/123",
+      "hint": "仅支持纯链接文本。任务创建后会在下方自动更新进度。",
+      "button": "创建下载任务",
+      "creating": "创建中..."
+    },
+    "list": {
+      "title": "任务列表",
+      "headers": {
+        "id": "ID",
+        "type": "类型",
+        "status": "状态",
+        "progress": "进度",
+        "speed": "速度",
+        "updated_at": "更新时间",
+        "result": "结果",
+        "action": "操作"
+      },
+      "empty": {
+        "title": "暂无任务",
+        "hint": "在上方输入链接并点击创建任务以开始下载"
+      }
+    },
+    "status": {
+      "pending": "等待中",
+      "running": "下载中",
+      "completed": "已完成",
+      "failed": "失败",
+      "canceled": "已取消"
+    },
+    "actions": {
+      "cancel": "取消",
+      "canceling": "取消中..."
+    },
+    "type": {
+      "user": "用户",
+      "channel": "频道",
+      "chat": "聊天",
+      "bot": "Bot"
+    }
+  },
+  "settings": {
+    "title": "系统设置",
+    "current_download_dir": "当前下载目录",
+    "save": "保存配置",
+    "saving": "保存中..."
+  },
+  "config": {
+    "bot_token": "机器人令牌（Bot Token）",
+    "bot_token_placeholder": "123456:AA...",
+    "api_id": "应用 ID（API ID）",
+    "api_id_placeholder": "123456",
+    "api_hash": "应用密钥（API Hash）",
+    "api_hash_placeholder": "请输入应用密钥",
+    "proxy": "代理设置",
+    "proxy_type": "代理类型",
+    "proxy_type_none": "不使用代理",
+    "proxy_host": "代理地址",
+    "proxy_host_placeholder": "127.0.0.1",
+    "proxy_port": "代理端口",
+    "proxy_port_placeholder": "1080",
+    "proxy_username": "代理用户名",
+    "proxy_username_placeholder": "可选",
+    "proxy_password": "代理密码",
+    "proxy_password_placeholder": "可选",
+    "test_proxy": "测试代理连接",
+    "testing_proxy": "测试中...",
+    "download_file_concurrency": "同时下载数",
+    "download_file_concurrency_placeholder": "1 - 8，默认 3",
+    "download_dir": "下载目录",
+    "download_dir_placeholder": "./downloads",
+    "allowed_user_ids": "允许用户 ID（逗号分隔）",
+    "allowed_user_ids_placeholder": "123456789, 987654321",
+    "allowed_user_ids_hint": "留空时默认仅允许当前登录的 Telegram 账号（通过 getMe 获取）",
+    "media_types": "媒体类型",
+    "media_labels": {
+      "photo": "照片 (Photo)",
+      "animation": "动图 (Animation)",
+      "audio": "音频 (Audio)",
+      "document": "文件 (Document)",
+      "video": "视频 (Video)",
+      "video_note": "视频笔记 (Video Note)",
+      "voice": "语音 (Voice)",
+      "sticker": "贴纸 (Sticker)"
+    }
+  },
+  "modal": {
+    "title": "提示",
+    "close": "知道了"
+  },
+  "messages": {
+    "not_initialized": "当前尚未初始化，请先完成初始化",
+    "config_saved": "配置已保存并热重载",
+    "config_save_failed": "配置保存失败",
+    "auth_required": "请先完成 Telegram 身份验证",
+    "init_complete": "配置初始化完成",
+    "init_failed": "配置初始化失败",
+    "enter_api_id": "请先填写有效的应用 ID（API ID）",
+    "enter_api_hash": "请先填写应用密钥（API Hash）",
+    "enter_phone": "请输入手机号（国际区号格式）",
+    "code_sent": "验证码已发送，请查收 Telegram 应用",
+    "send_code_failed": "验证码发送失败",
+    "enter_phone_code": "请输入手机号和验证码",
+    "2fa_required": "账号开启了二次验证，请填写二次密码后再次验证",
+    "login_no_session": "登录成功但未返回 session",
+    "auth_success": "Telegram 身份验证成功",
+    "auth_failed": "登录验证失败",
+    "task_created": "任务已创建: {{id}}",
+    "create_task_failed": "创建任务失败",
+    "task_canceled": "任务已取消: {{id}}",
+    "cancel_task_failed": "取消任务失败",
+    "enter_link": "请输入 Telegram 消息链接",
+    "not_configured": "请先完成配置初始化",
+    "proxy_missing": "请先完整填写代理地址和端口",
+    "proxy_test_success": "代理连接测试成功",
+    "proxy_test_failed": "代理连接测试失败"
+  },
+  "validation": {
+    "api_id_required": "应用 ID（API ID）未填写",
+    "api_id_invalid": "应用 ID（API ID）不是有效数字",
+    "api_hash_required": "应用密钥（API Hash）未填写",
+    "download_concurrency_required": "同时下载数未填写",
+    "download_concurrency_invalid": "同时下载数必须是整数",
+    "download_concurrency_range": "同时下载数必须在 1 到 8 之间",
+    "download_dir_required": "下载目录未填写",
+    "media_type_required": "媒体类型至少选择一个",
+    "user_ids_invalid": "允许用户 ID 必须是逗号分隔的数字",
+    "proxy_host_required": "代理地址未填写",
+    "proxy_port_invalid": "代理端口必须是有效整数",
+    "proxy_port_range": "代理端口必须在 1 到 65535 之间"
+  },
+  "init": {
+    "title": "初始化配置",
+    "subtitle": "步骤 {{step}} / 2",
+    "description": "首次使用分两步完成：先填写基础配置，再进行 Telegram 身份验证。",
+    "step1": {
+      "title": "第 1 步：基础配置",
+      "description": "基础配置已通过校验，可以进入下一步。",
+      "error": "请先修正：{{error}}",
+      "next": "下一步：身份验证"
+    },
+    "step2": {
+      "title": "第 2 步：Telegram 身份验证",
+      "phone_label": "手机号（国际区号）",
+      "phone_placeholder": "+8613800000000",
+      "send_code": "发送验证码",
+      "sending_code": "发送中...",
+      "code_label": "验证码",
+      "code_placeholder": "12345",
+      "password_label": "二次密码（如开启）",
+      "password_placeholder": "请输入二次密码",
+      "verify_code": "验证登录",
+      "verifying_code": "验证中...",
+      "hint": "请先发送验证码，随后会显示登录验证输入框。",
+      "authenticated": "已认证",
+      "unauthenticated": "未认证：请先完成身份验证"
+    },
+    "submit": "初始化配置",
+    "submitting": "初始化中...",
+    "back": "返回上一步"
+  }
+}

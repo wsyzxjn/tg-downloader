@@ -1,0 +1,182 @@
+{
+  "title": "TG Download Console",
+  "nav": {
+    "tasks": "Tasks",
+    "settings": "Settings"
+  },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "header": {
+    "initialized": "Initialized",
+    "uninitialized": "Uninitialized",
+    "active_tasks": "Active Tasks: {{count}}",
+    "refresh": "Refresh"
+  },
+  "tasks": {
+    "create": {
+      "title": "Create Task",
+      "link_label": "Link",
+      "link_placeholder": "https://t.me/channel/123",
+      "hint": "Only plain links are supported. Progress updates below.",
+      "button": "Create Download Task",
+      "creating": "Creating..."
+    },
+    "list": {
+      "title": "Task List",
+      "headers": {
+        "id": "ID",
+        "type": "Type",
+        "status": "Status",
+        "progress": "Progress",
+        "speed": "Speed",
+        "updated_at": "Updated At",
+        "result": "Result",
+        "action": "Action"
+      },
+      "empty": {
+        "title": "No Tasks",
+        "hint": "Enter a link above to start downloading"
+      }
+    },
+    "status": {
+      "pending": "Pending",
+      "running": "Downloading",
+      "completed": "Completed",
+      "failed": "Failed",
+      "canceled": "Canceled"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "canceling": "Canceling..."
+    },
+    "type": {
+      "user": "User",
+      "channel": "Channel",
+      "chat": "Chat",
+      "bot": "Bot"
+    }
+  },
+  "settings": {
+    "title": "System Settings",
+    "current_download_dir": "Current Download Dir",
+    "save": "Save Config",
+    "saving": "Saving..."
+  },
+  "config": {
+    "bot_token": "Bot Token",
+    "bot_token_placeholder": "123456:AA...",
+    "api_id": "App ID (API ID)",
+    "api_id_placeholder": "123456",
+    "api_hash": "App Hash (API Hash)",
+    "api_hash_placeholder": "Enter App Hash",
+    "proxy": "Proxy Settings",
+    "proxy_type": "Proxy Type",
+    "proxy_type_none": "No Proxy",
+    "proxy_host": "Proxy Host",
+    "proxy_host_placeholder": "127.0.0.1",
+    "proxy_port": "Proxy Port",
+    "proxy_port_placeholder": "1080",
+    "proxy_username": "Proxy Username",
+    "proxy_username_placeholder": "Optional",
+    "proxy_password": "Proxy Password",
+    "proxy_password_placeholder": "Optional",
+    "test_proxy": "Test Proxy",
+    "testing_proxy": "Testing...",
+    "download_file_concurrency": "Parallel Downloads",
+    "download_file_concurrency_placeholder": "1 - 8, default 3",
+    "download_dir": "Download Dir",
+    "download_dir_placeholder": "./downloads",
+    "allowed_user_ids": "Allowed User IDs (comma separated)",
+    "allowed_user_ids_placeholder": "123456789, 987654321",
+    "allowed_user_ids_hint": "Leave empty to allow only the current login account (via getMe)",
+    "media_types": "Media Types",
+    "media_labels": {
+      "photo": "Photo",
+      "animation": "Animation",
+      "audio": "Audio",
+      "document": "Document",
+      "video": "Video",
+      "video_note": "Video Note",
+      "voice": "Voice",
+      "sticker": "Sticker"
+    }
+  },
+  "modal": {
+    "title": "Notice",
+    "close": "OK"
+  },
+  "messages": {
+    "not_initialized": "Not initialized, please complete initialization first",
+    "config_saved": "Config saved and hot reloaded",
+    "config_save_failed": "Failed to save config",
+    "auth_required": "Please complete Telegram authentication first",
+    "init_complete": "Initialization completed",
+    "init_failed": "Initialization failed",
+    "enter_api_id": "Please enter a valid API ID",
+    "enter_api_hash": "Please enter API Hash",
+    "enter_phone": "Please enter phone number (with international code)",
+    "code_sent": "Verification code sent, please check Telegram app",
+    "send_code_failed": "Failed to send verification code",
+    "enter_phone_code": "Please enter phone number and verification code",
+    "2fa_required": "2FA enabled, please enter 2FA password and verify again",
+    "login_no_session": "Login successful but no session returned",
+    "auth_success": "Telegram authentication successful",
+    "auth_failed": "Login verification failed",
+    "task_created": "Task created: {{id}}",
+    "create_task_failed": "Failed to create task",
+    "task_canceled": "Task canceled: {{id}}",
+    "cancel_task_failed": "Failed to cancel task",
+    "enter_link": "Please enter Telegram message link",
+    "not_configured": "Please complete initialization first",
+    "proxy_missing": "Please fill proxy host and port first",
+    "proxy_test_success": "Proxy connection test passed",
+    "proxy_test_failed": "Proxy connection test failed"
+  },
+  "validation": {
+    "api_id_required": "API ID is required",
+    "api_id_invalid": "API ID must be a valid number",
+    "api_hash_required": "API Hash is required",
+    "download_concurrency_required": "Parallel download count is required",
+    "download_concurrency_invalid": "Parallel download count must be an integer",
+    "download_concurrency_range": "Parallel download count must be between 1 and 8",
+    "download_dir_required": "Download directory is required",
+    "media_type_required": "At least one media type must be selected",
+    "user_ids_invalid": "Allowed User IDs must be comma-separated numbers",
+    "proxy_host_required": "Proxy host is required",
+    "proxy_port_invalid": "Proxy port must be a valid integer",
+    "proxy_port_range": "Proxy port must be between 1 and 65535"
+  },
+  "init": {
+    "title": "Initialize Config",
+    "subtitle": "Step {{step}} / 2",
+    "description": "First time setup involves two steps: basic configuration and Telegram authentication.",
+    "step1": {
+      "title": "Step 1: Basic Configuration",
+      "description": "Basic configuration validated. Proceed to next step.",
+      "error": "Please fix: {{error}}",
+      "next": "Next: Authentication"
+    },
+    "step2": {
+      "title": "Step 2: Telegram Authentication",
+      "phone_label": "Phone Number (with international code)",
+      "phone_placeholder": "+1234567890",
+      "send_code": "Send Code",
+      "sending_code": "Sending...",
+      "code_label": "Verification Code",
+      "code_placeholder": "12345",
+      "password_label": "2FA Password (if enabled)",
+      "password_placeholder": "Enter 2FA password",
+      "verify_code": "Verify Login",
+      "verifying_code": "Verifying...",
+      "hint": "Please send verification code first.",
+      "authenticated": "Authenticated",
+      "unauthenticated": "Unauthenticated: Please complete verification"
+    },
+    "submit": "Initialize Config",
+    "submitting": "Initializing...",
+    "back": "Back"
+  }
+}
