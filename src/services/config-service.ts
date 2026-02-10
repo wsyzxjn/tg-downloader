@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import { setLogLevel } from "@/services/logger.js";
 import type { Setting } from "@/types/setting.js";
 
 export type { Setting } from "@/types/setting.js";
 export const DEFAULT_DOWNLOAD_FILE_CONCURRENCY = 3;
+export const DEFAULT_LOG_LEVEL = "info";
 
 const CONFIG_DIR = path.resolve(process.cwd(), "config");
 const SETTING_PATH = path.join(CONFIG_DIR, "setting.json");
@@ -25,11 +27,27 @@ function readSettingFromDisk(): Setting | null {
       typeof parsed.downloadFileConcurrency === "number"
         ? parsed.downloadFileConcurrency
         : DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
+    logLevel:
+      parsed.logLevel === "debug" ||
+      parsed.logLevel === "info" ||
+      parsed.logLevel === "warn" ||
+      parsed.logLevel === "error"
+        ? parsed.logLevel
+        : DEFAULT_LOG_LEVEL,
   } as Setting;
 }
 
 let settingCache = readSettingFromDisk();
 const settingListeners = new Set<(setting: Setting | null) => void>();
+
+function applyLoggerLevel(setting: Setting | null) {
+  if (!setting) {
+    return;
+  }
+  setLogLevel(setting.logLevel);
+}
+
+applyLoggerLevel(settingCache);
 
 function emitSettingChange(setting: Setting | null) {
   for (const listener of settingListeners) {
@@ -51,6 +69,7 @@ export function getSetting(): Setting | null {
  */
 export function reloadSetting(): Setting | null {
   settingCache = readSettingFromDisk();
+  applyLoggerLevel(settingCache);
   return settingCache;
 }
 
@@ -81,6 +100,7 @@ export function requireSetting(): Setting {
 export function saveSetting(setting: Setting): Setting {
   settingCache = setting;
   fs.writeFileSync(SETTING_PATH, JSON.stringify(settingCache, null, 2));
+  applyLoggerLevel(settingCache);
   emitSettingChange(settingCache);
   return settingCache;
 }

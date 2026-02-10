@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Message } from "grammy/types";
 import sanitizeFilename from "sanitize-filename";
 import { Api } from "telegram";
+import { returnBigInt } from "telegram/Helpers.js";
 import { getClient } from "@/client.js";
 import type { FileInfo } from "@/services/file-info-service.js";
 import {
@@ -36,6 +37,8 @@ const MAX_ALBUM_DOWNLOAD_CONCURRENCY = 8;
 const DEFAULT_DOWNLOAD_PART_SIZE_KB = 512;
 const MIN_DOWNLOAD_PART_SIZE_KB = 4;
 const MAX_DOWNLOAD_PART_SIZE_KB = 512;
+const DEFAULT_SINGLE_FILE_DOWNLOAD_WORKERS = 1;
+const MAX_SINGLE_FILE_DOWNLOAD_WORKERS = 4;
 
 function resolveAlbumDownloadConcurrency(
   requested: number | undefined
@@ -54,6 +57,101 @@ function resolveDownloadPartSizeKb(): number {
     Math.min(MAX_DOWNLOAD_PART_SIZE_KB, normalized)
   );
   return clamped - (clamped % 4);
+}
+
+function resolveSingleFileDownloadWorkers(): number {
+  const raw = Number.parseInt(process.env.DOWNLOAD_FILE_WORKERS || "", 10);
+  const normalized = Number.isNaN(raw)
+    ? DEFAULT_SINGLE_FILE_DOWNLOAD_WORKERS
+    : raw;
+  return Math.max(1, Math.min(MAX_SINGLE_FILE_DOWNLOAD_WORKERS, normalized));
+}
+
+interface ParallelDownloadInput {
+  location: Api.TypeInputFileLocation;
+  dcId: number;
+  fileSize: number;
+}
+
+async function downloadFileInParallel(
+  input: ParallelDownloadInput,
+  targetPath: string,
+  partSizeKb: number,
+  workers: number,
+  options?: DownloadOptions
+) {
+  const client = getClient();
+  const chunkSize = partSizeKb * 1024;
+  const stride = workers * chunkSize;
+  const progressByWorker = new Array(workers).fill(0);
+  let lastDownloaded = 0;
+  let lastAt = Date.now();
+  let canceledError: unknown = null;
+  const fileHandle = await fs.open(targetPath, "w");
+
+  const emitProgress = () => {
+    const downloaded = progressByWorker.reduce((sum, value) => sum + value, 0);
+    const total = input.fileSize;
+    const percent = total > 0 ? Math.floor((downloaded / total) * 100) : 0;
+    const now = Date.now();
+    const deltaBytes = downloaded - lastDownloaded;
+    const deltaMs = now - lastAt;
+    const speedBytesPerSec =
+      deltaBytes > 0 && deltaMs > 0
+        ? Math.floor((deltaBytes * 1000) / deltaMs)
+        : 0;
+    lastDownloaded = downloaded;
+    lastAt = now;
+    options?.onProgress?.({
+      downloaded,
+      total,
+      percent: Math.max(0, Math.min(100, percent)),
+      speedBytesPerSec,
+    });
+  };
+
+  try {
+    await fileHandle.truncate(input.fileSize);
+
+    const workerTasks = Array.from({ length: workers }, (_, workerIndex) => {
+      return (async () => {
+        let offset = workerIndex * chunkSize;
+        const iterator = client.iterDownload({
+          file: input.location,
+          dcId: input.dcId,
+          fileSize: returnBigInt(input.fileSize),
+          offset: returnBigInt(offset),
+          stride,
+          chunkSize,
+          requestSize: chunkSize,
+        });
+
+        for await (const chunk of iterator) {
+          if (canceledError) {
+            return;
+          }
+
+          await fileHandle.write(chunk, 0, chunk.length, offset);
+          progressByWorker[workerIndex] += chunk.length;
+          offset += stride;
+
+          try {
+            emitProgress();
+          } catch (error) {
+            canceledError = error;
+            throw error;
+          }
+        }
+      })();
+    });
+
+    await Promise.all(workerTasks);
+    if (canceledError) {
+      throw canceledError;
+    }
+  } finally {
+    await fileHandle.close();
+  }
 }
 
 function extractDocumentFromMessage(
@@ -192,22 +290,21 @@ async function downloadSourceMessage(
 
     const document = extractDocumentFromMessage(sourceMessage);
     let result: string | Buffer | undefined;
+    let parallelInput: ParallelDownloadInput | null = null;
     if (document) {
-      result = await client.downloadFile(
-        new Api.InputDocumentFileLocation({
-          id: document.id,
-          accessHash: document.accessHash,
-          fileReference: document.fileReference,
-          thumbSize: "",
-        }),
-        {
-          outputFile: targetPath,
-          partSizeKb,
-          fileSize: document.size,
-          dcId: document.dcId,
-          progressCallback,
-        }
-      );
+      const docSize = Number.parseInt(document.size.toString(), 10);
+      parallelInput = Number.isNaN(docSize)
+        ? null
+        : {
+            location: new Api.InputDocumentFileLocation({
+              id: document.id,
+              accessHash: document.accessHash,
+              fileReference: document.fileReference,
+              thumbSize: "",
+            }),
+            dcId: document.dcId,
+            fileSize: docSize,
+          };
     } else if (sourceMessage.photo instanceof Api.Photo) {
       const largestSize = pickLargestPhotoSize(sourceMessage.photo);
       if (!largestSize) {
@@ -219,21 +316,36 @@ async function downloadSourceMessage(
           : "size" in largestSize
             ? largestSize.size
             : 512;
-      result = await client.downloadFile(
-        new Api.InputPhotoFileLocation({
+      parallelInput = {
+        location: new Api.InputPhotoFileLocation({
           id: sourceMessage.photo.id,
           accessHash: sourceMessage.photo.accessHash,
           fileReference: sourceMessage.photo.fileReference,
           thumbSize: "type" in largestSize ? largestSize.type : "",
         }),
-        {
-          outputFile: targetPath,
-          partSizeKb,
-          fileSize: photoSize as never,
-          dcId: sourceMessage.photo.dcId,
-          progressCallback,
-        }
+        dcId: sourceMessage.photo.dcId,
+        fileSize: photoSize,
+      };
+    }
+
+    const workers = resolveSingleFileDownloadWorkers();
+    if (parallelInput && workers > 1) {
+      await downloadFileInParallel(
+        parallelInput,
+        targetPath,
+        partSizeKb,
+        workers,
+        options
       );
+      result = targetPath;
+    } else if (parallelInput) {
+      result = await client.downloadFile(parallelInput.location, {
+        outputFile: targetPath,
+        partSizeKb,
+        fileSize: parallelInput.fileSize as never,
+        dcId: parallelInput.dcId,
+        progressCallback,
+      });
     } else {
       result = await client.downloadMedia(sourceMessage, {
         outputFile: targetPath,

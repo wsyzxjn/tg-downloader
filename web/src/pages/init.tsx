@@ -75,8 +75,8 @@ export function InitPage({
   const { t } = useTranslation()
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="overflow-hidden border-border/60 bg-card/60 shadow-md backdrop-blur-md transition-all">
+      <CardHeader className="border-b border-border/40 bg-muted/30 pb-4">
         <CardTitle className="text-2xl font-semibold tracking-tight">{t("init.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -86,7 +86,7 @@ export function InitPage({
         {initStep === 1 ? (
           <>
             <Card>
-              <CardHeader>
+              <CardHeader className="border-b border-border/40 bg-muted/20 pb-4">
                 <CardTitle className="text-lg font-semibold tracking-tight">
                   {t("init.step1.title")}
                 </CardTitle>
@@ -122,7 +122,7 @@ export function InitPage({
         ) : (
           <>
             <Card>
-              <CardHeader>
+              <CardHeader className="border-b border-border/40 bg-muted/20 pb-4">
                 <CardTitle className="text-lg font-semibold tracking-tight">
                   {t("init.step2.title")}
                 </CardTitle>

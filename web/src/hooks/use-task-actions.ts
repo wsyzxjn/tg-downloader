@@ -99,7 +99,7 @@ export function useTaskActions({
       setCancelingTaskId(taskId)
       try {
         await cancelTask(taskId)
-        onNotice(t("messages.task_canceled", { id: taskId }))
+        // onNotice(t("messages.task_canceled", { id: taskId }))
       } catch (error) {
         onNotice(error instanceof Error ? error.message : t("messages.cancel_task_failed"))
       } finally {

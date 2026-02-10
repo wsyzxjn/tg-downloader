@@ -17,6 +17,7 @@ export const DEFAULT_SETTING_FORM: SettingForm = {
   apiHash: "",
   downloadDir: "./downloads",
   downloadFileConcurrency: "3",
+  logLevel: "info",
   proxyType: "none",
   proxyHost: "",
   proxyPort: "",

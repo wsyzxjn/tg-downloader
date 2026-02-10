@@ -72,7 +72,39 @@ const tasks = new Map<string, TaskRecord>();
 const taskPayloads = new Map<string, TaskPayload>();
 const taskEventListeners = new Set<(event: TaskEvent) => void>();
 const TASK_TTL_MS = 1000 * 60 * 60 * 24;
+const MAX_CONCURRENT_RUNNING_TASKS = 3;
+const runningTaskIds = new Set<string>();
 const logger = createLogger("task-service");
+
+function normalizeTaskErrorMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error);
+
+  if (
+    raw.includes("Could not find the input entity for") ||
+    raw.includes("PEER_ID_INVALID") ||
+    raw.includes("CHANNEL_INVALID") ||
+    raw.includes("CHAT_ID_INVALID")
+  ) {
+    return "无法定位消息来源实体，请确认当前账号已加入来源频道/群组并且有访问权限。";
+  }
+
+  if (raw.includes("MESSAGE_ID_INVALID")) {
+    return "消息 ID 无效，可能该消息已删除或当前账号无权访问。";
+  }
+
+  if (
+    raw.includes("AUTH_KEY_UNREGISTERED") ||
+    raw.includes("SESSION_REVOKED")
+  ) {
+    return "用户会话已失效，请重新完成 Telegram 登录。";
+  }
+
+  if (raw.includes("FLOOD_WAIT")) {
+    return "请求过于频繁，Telegram 触发限流，请稍后重试。";
+  }
+
+  return raw || "未知错误";
+}
 
 function getExpiresAt(): string {
   return new Date(Date.now() + TASK_TTL_MS).toISOString();
@@ -159,6 +191,39 @@ export function subscribeTaskEvents(listener: (event: TaskEvent) => void) {
   };
 }
 
+function findNextPendingTaskId(): string | null {
+  const candidates = [...tasks.values()]
+    .filter(task => task.status === "pending")
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+  for (const task of candidates) {
+    if (runningTaskIds.has(task.id)) {
+      continue;
+    }
+    if (!taskPayloads.has(task.id)) {
+      continue;
+    }
+    return task.id;
+  }
+
+  return null;
+}
+
+function scheduleTaskRuns() {
+  while (runningTaskIds.size < MAX_CONCURRENT_RUNNING_TASKS) {
+    const nextTaskId = findNextPendingTaskId();
+    if (!nextTaskId) {
+      return;
+    }
+
+    runningTaskIds.add(nextTaskId);
+    void runTask(nextTaskId).finally(() => {
+      runningTaskIds.delete(nextTaskId);
+      scheduleTaskRuns();
+    });
+  }
+}
+
 interface CreateLinkTaskOptions {
   sourceKey?: string;
 }
@@ -199,7 +264,7 @@ export function createLinkDownloadTask(
     messageLink,
     sourceKey: options?.sourceKey,
   });
-  void runTask(task.id);
+  scheduleTaskRuns();
   return task;
 }
 
@@ -242,7 +307,7 @@ export function createBotMessageDownloadTask(
     message,
     fileInfo,
   });
-  void runTask(task.id);
+  scheduleTaskRuns();
   return task;
 }
 
@@ -292,13 +357,18 @@ export function cancelTask(taskId: string, reason = "任务已取消"): TaskReco
     return task;
   }
 
-  logTaskDebug(taskId, "cancel accepted", { fromStatus: task.status });
+  const fromStatus = task.status;
+  logTaskDebug(taskId, "cancel accepted", { fromStatus });
   task.status = "canceled";
   task.updatedAt = new Date().toISOString();
   task.result = {
     ...(task.result || {}),
     error: reason,
   };
+  if (fromStatus === "pending") {
+    taskPayloads.delete(taskId);
+    scheduleTaskRuns();
+  }
   task.expiresAt = getExpiresAt();
   emitTaskUpsert(task);
   return task;
@@ -466,12 +536,13 @@ async function runTask(taskId: string) {
     }
 
     currentTask.status = "failed";
+    const normalizedMessage = normalizeTaskErrorMessage(error);
     logTaskDebug(taskId, "status -> failed", {
-      error: error instanceof Error ? error.message : String(error),
+      error: normalizedMessage,
     });
     currentTask.updatedAt = new Date().toISOString();
     currentTask.result = {
-      error: error instanceof Error ? error.message : "未知错误",
+      error: normalizedMessage,
     };
     currentTask.expiresAt = getExpiresAt();
     emitTaskUpsert(currentTask);

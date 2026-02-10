@@ -14,6 +14,7 @@ function isInvalidPeerError(error: unknown): boolean {
     return false;
   }
   return (
+    error.message.includes("Could not find the input entity for") ||
     error.message.includes("CHANNEL_INVALID") ||
     error.message.includes("CHAT_ID_INVALID") ||
     error.message.includes("PEER_ID_INVALID")
@@ -76,27 +77,59 @@ async function getSourceMessageFromForward(message: Message) {
     return null;
   }
 
-  let sourceMessages: unknown[] = [];
-  try {
-    sourceMessages = await client.getMessages(origin.chat.id, {
-      ids: origin.message_id,
-    });
-  } catch (error) {
-    if (isInvalidPeerError(error)) {
-      logger.warn("forward_origin 频道实体无效，回退到 bot 对话查询", {
-        chatId: origin.chat.id,
-        messageId: origin.message_id,
+  const username =
+    "username" in origin.chat &&
+    typeof origin.chat.username === "string" &&
+    origin.chat.username.trim()
+      ? origin.chat.username.trim()
+      : null;
+
+  const peerCandidates: Array<string | number> = [];
+  if (username) {
+    peerCandidates.push(username);
+  }
+  peerCandidates.push(origin.chat.id);
+
+  for (const peer of peerCandidates) {
+    try {
+      const sourceMessages = await client.getMessages(peer, {
+        ids: origin.message_id,
       });
-      return null;
+      const sourceMessage = sourceMessages[0];
+      if (sourceMessage && sourceMessage instanceof Api.Message) {
+        return sourceMessage;
+      }
+    } catch (error) {
+      if (!isInvalidPeerError(error)) {
+        throw error;
+      }
+
+      if (typeof peer === "number") {
+        try {
+          // Warm up entity cache and retry once for numeric channel id peers.
+          await client.getDialogs({ limit: 200 });
+          const sourceMessages = await client.getMessages(peer, {
+            ids: origin.message_id,
+          });
+          const sourceMessage = sourceMessages[0];
+          if (sourceMessage && sourceMessage instanceof Api.Message) {
+            return sourceMessage;
+          }
+        } catch (retryError) {
+          if (!isInvalidPeerError(retryError)) {
+            throw retryError;
+          }
+        }
+      }
     }
-    throw error;
   }
 
-  const sourceMessage = sourceMessages[0];
-  if (!sourceMessage || !(sourceMessage instanceof Api.Message)) {
-    return null;
-  }
-  return sourceMessage;
+  logger.warn("forward_origin 源消息解析失败，回退到 bot 对话查询", {
+    chatId: origin.chat.id,
+    messageId: origin.message_id,
+    username,
+  });
+  return null;
 }
 
 /**
@@ -112,9 +145,22 @@ async function getSourceMessageFromBotDialog(message: Message) {
   }
 
   const botId = parseBotIdFromToken(botToken);
-  const sourceMessages = await client.getMessages(botId, {
-    ids: message.message_id,
-  });
+  let sourceMessages: unknown[] = [];
+  try {
+    sourceMessages = await client.getMessages(botId, {
+      ids: message.message_id,
+    });
+  } catch (error) {
+    if (!isInvalidPeerError(error)) {
+      throw error;
+    }
+
+    // The bot peer may not be cached yet for this user session.
+    await client.getDialogs({ limit: 200 });
+    sourceMessages = await client.getMessages(botId, {
+      ids: message.message_id,
+    });
+  }
 
   const sourceMessage = sourceMessages[0];
   if (!sourceMessage || !(sourceMessage instanceof Api.Message)) {

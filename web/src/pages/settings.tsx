@@ -36,8 +36,8 @@ export function SettingsPage({
   const { t } = useTranslation()
 
   return (
-    <Card className="overflow-hidden border-border/40 bg-card/50 shadow-sm backdrop-blur-sm transition-all hover:border-border/80 hover:shadow-md">
-      <CardHeader className="bg-muted/40 pb-4">
+    <Card className="overflow-hidden border-border/60 bg-card/60 shadow-md backdrop-blur-md transition-all">
+      <CardHeader className="border-b border-border/40 bg-muted/30 pb-4">
         <CardTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
           <Settings className="h-5 w-5 text-primary" />
           {t("settings.title")}

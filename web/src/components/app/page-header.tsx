@@ -22,9 +22,9 @@ export function PageHeader({
   const { t } = useTranslation()
 
   return (
-    <Card>
+    <Card className="overflow-hidden border-border/60 bg-card/60 shadow-md backdrop-blur-md transition-all">
       <CardContent className="space-y-3 p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:min-h-[2.25rem]">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant={configured ? "default" : "secondary"}>
               {configured ? t("header.initialized") : t("header.uninitialized")}
@@ -36,7 +36,7 @@ export function PageHeader({
             ) : null}
           </div>
           {configured && isTaskRoute ? (
-            <Button variant="secondary" onClick={onRefreshTasks}>
+            <Button variant="outline" onClick={onRefreshTasks}>
               <RefreshCw className="mr-2 h-4 w-4" />
               {t("header.refresh")}
             </Button>

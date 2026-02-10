@@ -5,6 +5,7 @@ import { StringSession } from "telegram/sessions/StringSession.js";
 import { MEDIA_TYPES } from "@/constants/media-types.js";
 import {
   DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
+  DEFAULT_LOG_LEVEL,
   getSetting,
   isConfigured,
   reloadSetting,
@@ -125,6 +126,15 @@ function validateSettingShape(setting: Partial<Setting>) {
     throw new Error("downloadDir 必填且必须是字符串");
   }
   if (
+    setting.logLevel !== undefined &&
+    setting.logLevel !== "debug" &&
+    setting.logLevel !== "info" &&
+    setting.logLevel !== "warn" &&
+    setting.logLevel !== "error"
+  ) {
+    throw new Error("logLevel 必须是 debug/info/warn/error 之一");
+  }
+  if (
     setting.downloadFileConcurrency !== undefined &&
     (typeof setting.downloadFileConcurrency !== "number" ||
       !Number.isInteger(setting.downloadFileConcurrency))
@@ -176,6 +186,16 @@ export function updateSetting(patch: Partial<Setting>) {
 
   if (patch.apiId !== undefined && typeof patch.apiId !== "number") {
     throw new Error("apiId 必须是数字");
+  }
+  if (patch.logLevel !== undefined) {
+    if (
+      patch.logLevel !== "debug" &&
+      patch.logLevel !== "info" &&
+      patch.logLevel !== "warn" &&
+      patch.logLevel !== "error"
+    ) {
+      throw new Error("logLevel 必须是 debug/info/warn/error 之一");
+    }
   }
   if (patch.downloadFileConcurrency !== undefined) {
     if (
@@ -231,6 +251,7 @@ export async function initSetting(setting: Setting): Promise<Setting> {
           downloadFileConcurrency:
             setting.downloadFileConcurrency ??
             DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
+          logLevel: setting.logLevel ?? DEFAULT_LOG_LEVEL,
           allowedUserIds: [await resolveSelfUserId(setting)],
         }
       : {
@@ -238,6 +259,7 @@ export async function initSetting(setting: Setting): Promise<Setting> {
           downloadFileConcurrency:
             setting.downloadFileConcurrency ??
             DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
+          logLevel: setting.logLevel ?? DEFAULT_LOG_LEVEL,
         };
 
   const saved = saveSetting(normalizedSetting);

@@ -87,6 +87,13 @@
     "testing_proxy": "Testing...",
     "download_file_concurrency": "Parallel Downloads",
     "download_file_concurrency_placeholder": "1 - 8, default 3",
+    "log_level": "Log Level",
+    "log_level_options": {
+      "debug": "Debug",
+      "info": "Info",
+      "warn": "Warn",
+      "error": "Error"
+    },
     "download_dir": "Download Dir",
     "download_dir_placeholder": "./downloads",
     "allowed_user_ids": "Allowed User IDs (comma separated)",

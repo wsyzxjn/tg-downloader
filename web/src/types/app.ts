@@ -1,5 +1,6 @@
 export type TaskStatus = "pending" | "running" | "completed" | "failed" | "canceled"
 export type ThemeMode = "system" | "light" | "dark"
+export type LogLevel = "debug" | "info" | "warn" | "error"
 
 export interface Setting {
   botToken?: string
@@ -8,6 +9,7 @@ export interface Setting {
   session?: string
   downloadDir: string
   downloadFileConcurrency: number
+  logLevel: LogLevel
   allowedUserIds: number[]
   mediaTypes: string[]
   proxy?: string
@@ -19,6 +21,7 @@ export interface SettingForm {
   apiHash: string
   downloadDir: string
   downloadFileConcurrency: string
+  logLevel: LogLevel
   proxyType: "none" | "socks5" | "socks4"
   proxyHost: string
   proxyPort: string

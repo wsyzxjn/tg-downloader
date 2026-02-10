@@ -101,7 +101,7 @@ export function ConfigFields({
                   proxyType: event.target.value as "none" | "socks4" | "socks5",
                 }))
               }
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="none">{t("config.proxy_type_none")}</option>
               <option value="socks5">SOCKS5</option>
@@ -137,7 +137,9 @@ export function ConfigFields({
             />
           </div>
 
-          <div className="flex items-end">
+          <div className="space-y-2">
+            {/* Invisible label to align button with inputs that have labels */}
+            <Label className="text-xs opacity-0 select-none">&nbsp;</Label>
             <Button
               type="button"
               variant="outline"
@@ -158,7 +160,12 @@ export function ConfigFields({
             <Input
               id="proxy-username"
               value={form.proxyUsername}
-              onChange={event => setForm(prev => ({ ...prev, proxyUsername: event.target.value }))}
+              onChange={event =>
+                setForm(prev => ({
+                  ...prev,
+                  proxyUsername: event.target.value,
+                }))
+              }
               placeholder={t("config.proxy_username_placeholder")}
               className="font-mono text-sm"
               disabled={form.proxyType === "none"}
@@ -173,7 +180,12 @@ export function ConfigFields({
               id="proxy-password"
               type="password"
               value={form.proxyPassword}
-              onChange={event => setForm(prev => ({ ...prev, proxyPassword: event.target.value }))}
+              onChange={event =>
+                setForm(prev => ({
+                  ...prev,
+                  proxyPassword: event.target.value,
+                }))
+              }
               placeholder={t("config.proxy_password_placeholder")}
               className="font-mono text-sm"
               disabled={form.proxyType === "none"}
@@ -205,6 +217,29 @@ export function ConfigFields({
           step={1}
           inputMode="numeric"
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="log-level" className="text-sm font-medium text-foreground">
+          {t("config.log_level")}
+          <span className="text-red-500">*</span>
+        </Label>
+        <select
+          id="log-level"
+          value={form.logLevel}
+          onChange={event =>
+            setForm(prev => ({
+              ...prev,
+              logLevel: event.target.value as "debug" | "info" | "warn" | "error",
+            }))
+          }
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <option value="debug">{t("config.log_level_options.debug")}</option>
+          <option value="info">{t("config.log_level_options.info")}</option>
+          <option value="warn">{t("config.log_level_options.warn")}</option>
+          <option value="error">{t("config.log_level_options.error")}</option>
+        </select>
       </div>
 
       <div className="space-y-2 md:col-span-2">

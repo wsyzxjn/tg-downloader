@@ -1,10 +1,10 @@
-import { Inbox, Link2, ListTodo, Plus, Send, Sparkles } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Inbox, Link2, ListTodo, Plus, Send, Sparkles } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Table,
   TableBody,
@@ -12,26 +12,26 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import type { TaskRecord, TaskStatus } from "@/types/app";
-import { statusTone, taskTypeLabel } from "@/utils/app";
+} from "@/components/ui/table"
+import type { TaskRecord, TaskStatus } from "@/types/app"
+import { statusTone, taskTypeLabel } from "@/utils/app"
 
 interface TasksPageProps {
-  loading: boolean;
-  creatingTask: boolean;
-  cancelingTaskId: string | null;
-  linkInput: string;
-  setLinkInput: (value: string) => void;
-  onCreateTask: () => void;
-  onCancelTask: (taskId: string) => void;
-  tasks: TaskRecord[];
+  loading: boolean
+  creatingTask: boolean
+  cancelingTaskId: string | null
+  linkInput: string
+  setLinkInput: (value: string) => void
+  onCreateTask: () => void
+  onCancelTask: (taskId: string) => void
+  tasks: TaskRecord[]
 }
 
 function normalizeProgressPercent(status: TaskStatus, percent: number): number {
   if (status === "completed") {
-    return 100;
+    return 100
   }
-  return Math.max(0, Math.min(100, percent));
+  return Math.max(0, Math.min(100, percent))
 }
 
 export function TasksPage({
@@ -44,27 +44,27 @@ export function TasksPage({
   onCancelTask,
   tasks,
 }: TasksPageProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   const formatSpeed = (speedBytesPerSec: number | undefined) => {
     if (!speedBytesPerSec || speedBytesPerSec <= 0) {
-      return "-";
+      return "-"
     }
-    const units = ["B/s", "KB/s", "MB/s", "GB/s"];
-    let size = speedBytesPerSec;
-    let index = 0;
+    const units = ["B/s", "KB/s", "MB/s", "GB/s"]
+    let size = speedBytesPerSec
+    let index = 0
     while (size >= 1024 && index < units.length - 1) {
-      size /= 1024;
-      index += 1;
+      size /= 1024
+      index += 1
     }
-    const display = size >= 10 ? size.toFixed(0) : size.toFixed(1);
-    return `${display} ${units[index]}`;
-  };
+    const display = size >= 10 ? size.toFixed(0) : size.toFixed(1)
+    return `${display} ${units[index]}`
+  }
 
   return (
     <>
-      <Card className="overflow-hidden border-border/40 bg-card/50 shadow-sm backdrop-blur-sm transition-all hover:border-border/80 hover:shadow-md">
-        <CardHeader className="bg-muted/40 pb-4">
+      <Card className="overflow-hidden border-border/60 bg-card/60 shadow-md backdrop-blur-md transition-all">
+        <CardHeader className="border-b border-border/40 bg-muted/30 pb-4">
           <CardTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
             <Sparkles className="h-5 w-5 text-primary" />
             {t("tasks.create.title")}
@@ -73,10 +73,7 @@ export function TasksPage({
         <CardContent className="space-y-4 pt-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1 space-y-2">
-              <Label
-                htmlFor="link"
-                className="text-sm font-medium text-muted-foreground"
-              >
+              <Label htmlFor="link" className="text-sm font-medium text-muted-foreground">
                 {t("tasks.create.link_label")}
               </Label>
               <div className="relative">
@@ -85,7 +82,7 @@ export function TasksPage({
                   id="link"
                   placeholder={t("tasks.create.link_placeholder")}
                   value={linkInput}
-                  onChange={(event) => setLinkInput(event.target.value)}
+                  onChange={event => setLinkInput(event.target.value)}
                   className="pl-9"
                 />
               </div>
@@ -115,8 +112,8 @@ export function TasksPage({
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden border-border/40 bg-card/50 shadow-sm backdrop-blur-sm transition-all hover:border-border/80 hover:shadow-md">
-        <CardHeader className="bg-muted/40 pb-4">
+      <Card className="overflow-hidden border-border/60 bg-card/60 shadow-md backdrop-blur-md transition-all">
+        <CardHeader className="border-b border-border/40 bg-muted/30 pb-4">
           <CardTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
             <ListTodo className="h-5 w-5 text-primary" />
             {t("tasks.list.title")}
@@ -130,42 +127,35 @@ export function TasksPage({
                   <TableHead className="w-[100px] min-w-[100px]">
                     {t("tasks.list.headers.id")}
                   </TableHead>
-                  <TableHead className="min-w-[100px]">
-                    {t("tasks.list.headers.type")}
-                  </TableHead>
-                  <TableHead className="min-w-[100px]">
-                    {t("tasks.list.headers.status")}
-                  </TableHead>
+                  <TableHead className="min-w-[100px]">{t("tasks.list.headers.type")}</TableHead>
+                  <TableHead className="min-w-[100px]">{t("tasks.list.headers.status")}</TableHead>
                   <TableHead className="w-[280px] min-w-[200px]">
-                    {t("tasks.list.headers.progress")} /{" "}
-                    {t("tasks.list.headers.speed")}
+                    {t("tasks.list.headers.progress")} / {t("tasks.list.headers.speed")}
                   </TableHead>
                   <TableHead className="w-[180px] min-w-[150px]">
                     {t("tasks.list.headers.updated_at")}
                   </TableHead>
-                  <TableHead className="min-w-[200px]">
-                    {t("tasks.list.headers.result")}
-                  </TableHead>
+                  <TableHead className="min-w-[200px]">{t("tasks.list.headers.result")}</TableHead>
                   <TableHead className="w-[120px] min-w-[100px]">
                     {t("tasks.list.headers.action")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.map((task) => {
+                {tasks.map(task => {
                   const progressPercent = normalizeProgressPercent(
                     task.status,
-                    task.progress.percent,
-                  );
+                    task.progress.percent
+                  )
 
                   // Keep single color for progress bar
-                  const progressColorClass = "bg-primary";
+                  const progressColorClass = "bg-primary"
 
                   // Determine row style
-                  const isCanceled = task.status === "canceled";
+                  const isCanceled = task.status === "canceled"
                   const rowClass = isCanceled
                     ? "group transition-colors hover:bg-muted/30 opacity-60 grayscale-[0.5]"
-                    : "group transition-colors hover:bg-muted/30";
+                    : "group transition-colors hover:bg-muted/30"
 
                   return (
                     <TableRow key={task.id} className={rowClass}>
@@ -173,14 +163,8 @@ export function TasksPage({
                         {task.id}
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className="font-normal whitespace-nowrap"
-                        >
-                          {t(
-                            `tasks.type.${task.type}` as const,
-                            taskTypeLabel(task.type),
-                          )}
+                        <Badge variant="outline" className="font-normal whitespace-nowrap">
+                          {t(`tasks.type.${task.type}` as const, taskTypeLabel(task.type))}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -195,9 +179,7 @@ export function TasksPage({
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                             <span>{progressPercent}%</span>
-                            <span>
-                              {formatSpeed(task.progress.speedBytesPerSec)}
-                            </span>
+                            <span>{formatSpeed(task.progress.speedBytesPerSec)}</span>
                           </div>
                           <div className="h-2 w-full rounded-full bg-secondary/50 overflow-hidden">
                             <div
@@ -210,21 +192,24 @@ export function TasksPage({
                       <TableCell className="text-xs text-muted-foreground">
                         {new Date(task.updatedAt).toLocaleString()}
                       </TableCell>
-                      <TableCell className="max-w-[250px] break-words whitespace-normal text-xs text-muted-foreground">
+                      <TableCell className="max-w-[250px] text-xs text-muted-foreground">
                         {task.result?.error ? (
-                          <span className="flex items-start gap-1 text-muted-foreground hover:text-foreground transition-colors">
-                            <span className="text-destructive mt-0.5">●</span>{" "}
-                            {task.result.error}
-                          </span>
+                          <div
+                            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors w-full"
+                            title={task.result.error}
+                          >
+                            <span className="truncate">{task.result.error}</span>
+                          </div>
                         ) : (
-                          task.result?.filePath || (
-                            <span className="text-muted-foreground/50">-</span>
-                          )
+                          <div className="truncate w-full" title={task.result?.filePath}>
+                            {task.result?.filePath || (
+                              <span className="text-muted-foreground/50">-</span>
+                            )}
+                          </div>
                         )}
                       </TableCell>
                       <TableCell className="min-w-[100px]">
-                        {task.status === "pending" ||
-                        task.status === "running" ? (
+                        {task.status === "pending" || task.status === "running" ? (
                           <Button
                             variant="outline"
                             size="sm"
@@ -237,13 +222,11 @@ export function TasksPage({
                               : t("tasks.actions.cancel")}
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground/50">
-                            -
-                          </span>
+                          <span className="text-xs text-muted-foreground/50">-</span>
                         )}
                       </TableCell>
                     </TableRow>
-                  );
+                  )
                 })}
                 {tasks.length === 0 ? (
                   <TableRow>
@@ -270,5 +253,5 @@ export function TasksPage({
         </CardContent>
       </Card>
     </>
-  );
+  )
 }

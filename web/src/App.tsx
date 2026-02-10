@@ -1,15 +1,15 @@
 import { useCallback, useState } from "react"
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
-import { InitPage } from "@/components/app/init-page"
 import { PageHeader } from "@/components/app/page-header"
-import { SettingsPage } from "@/components/app/settings-page"
-import { TasksPage } from "@/components/app/tasks-page"
 import { TopNav } from "@/components/app/top-nav"
 import { MessageDialog } from "@/components/ui/message-dialog"
 import { useInitialLoad, useRouteGuard, useTaskPolling } from "@/hooks/use-app-effects"
 import { useInitFlow } from "@/hooks/use-init-flow"
 import { useTaskActions } from "@/hooks/use-task-actions"
 import { useThemeMode } from "@/hooks/use-theme-mode"
+import { InitPage } from "@/pages/init"
+import { SettingsPage } from "@/pages/settings"
+import { TasksPage } from "@/pages/tasks"
 
 export default function App() {
   const navigate = useNavigate()
@@ -62,7 +62,7 @@ export default function App() {
   })
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_8%_10%,#f4f4f4_0%,#efefef_42%,#e8e8e8_100%)] text-foreground dark:bg-[radial-gradient(circle_at_8%_10%,#242424_0%,#1e1e1e_45%,#161616_100%)]">
+    <div className="min-h-screen scrollbar-gutter-stable bg-[radial-gradient(circle_at_8%_10%,#f4f4f4_0%,#efefef_42%,#e8e8e8_100%)] text-foreground dark:bg-[radial-gradient(circle_at_8%_10%,#242424_0%,#1e1e1e_45%,#161616_100%)]">
       <TopNav isInitRoute={isInitRoute} themeMode={themeMode} setThemeMode={setThemeMode} />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
         <PageHeader
