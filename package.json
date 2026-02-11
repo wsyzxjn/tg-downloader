@@ -3,6 +3,7 @@
   "private": true,
   "description": "Telegram media downloader with bot and web console",
   "author": "amatsuka <amatsukamao@qq.com>",
+  "license": "MIT",
   "version": "0.1.1",
   "exports": {
     ".": {
