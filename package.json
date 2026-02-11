@@ -1,6 +1,7 @@
 {
-  "name": "tg-download-bot",
-  "description": "A simple Node.js project created by create-amatsuka-app",
+  "name": "tg-downloader",
+  "private": true,
+  "description": "Telegram media downloader with bot and web console",
   "author": "amatsuka <amatsukamao@qq.com>",
   "version": "0.1.0",
   "exports": {

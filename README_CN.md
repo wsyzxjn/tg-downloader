@@ -1,8 +1,12 @@
-# TG Download Bot
+# TG Downloader
 
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24-success)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-%3E%3D10-orange)](https://pnpm.io/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+<div align="center">
+  <img src="icon.svg" width="120" height="120" alt="TG Downloader Logo" />
+</div>
 
 [🇺🇸 English Documentation](README.md)
 
@@ -14,9 +18,18 @@
 - **高性能下载**：基于 MTProto 协议（通过 `telegram` 库）直接下载媒体文件，速度极快。
 - **Web 管理面板**：
   - 实时查看任务进度与下载速度。
-  - 任务管理（添加、取消、重试）。
+  - 任务管理（添加、取消）。
   - 系统参数可视化配置。
+  - **双语支持**：界面支持中文与英文一键切换。
 - **智能队列**：优化的并发管理机制，确保下载任务有序进行。
+
+### 🤖 可选功能：Telegram Bot 集成
+
+本项目内置了一个 Telegram Bot，您可以选择性开启。开启后，您可以直接在 Telegram 中与 Bot 交互：
+
+- **便携下载**：直接将包含媒体文件的消息转发给 Bot，即可自动添加到下载队列，无需打开 Web 控制台。
+- **即时反馈**：Bot 会实时回复下载进度和任务状态。
+- **多语言适配**：Bot 会自动识别用户的语言设置回复中文或英文。
 
 ## 🛠 技术栈
 
@@ -43,13 +56,13 @@
 - **Node.js**: 版本需 >= 24.0.0。
 - **pnpm**: 推荐使用 v10 或更高版本。
 
-### 安装与运行
+### 安装与运行（源码部署）
 
 1.  **克隆项目代码**
 
     ```bash
     git clone <repository-url>
-    cd tg-download-bot
+    cd tg-downloader
     ```
 
 2.  **安装依赖**
@@ -58,7 +71,10 @@
 
     ```bash
     pnpm install
+    pnpm -C web install
     ```
+
+    _说明：当前项目未使用 pnpm workspace，因此前端依赖需要单独安装。_
 
 3.  **构建项目**
 
@@ -77,6 +93,46 @@
     ```
 
     服务启动后，通常会监听 `3000` 端口（或根据您的配置而定）。
+
+### 🐳 Docker 部署（推荐）
+
+1.  **运行容器**
+
+    ```bash
+    docker run -d \
+      -p 3000:3000 \
+      -v $(pwd)/downloads:/app/downloads \
+      -v $(pwd)/config:/app/config \
+      --name tg-downloader \
+      ghcr.io/wsyzxjn/tg-downloader:latest
+    ```
+
+    - `/app/downloads`: 映射宿主机的下载目录。
+    - `/app/config`: 映射宿主机的配置目录（持久化保存配置信息）。
+
+2.  **使用 Docker Compose**
+
+    创建 `docker-compose.yml` 文件：
+
+    ```yaml
+    version: "3"
+    services:
+      tg-downloader:
+        image: ghcr.io/wsyzxjn/tg-downloader:latest
+        container_name: tg-downloader
+        ports:
+          - "3000:3000"
+        volumes:
+          - ./downloads:/app/downloads
+          - ./config:/app/config
+        restart: unless-stopped
+    ```
+
+    然后运行：
+
+    ```bash
+    docker-compose up -d
+    ```
 
 ### 初始化配置
 

@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## 项目概览
-- 项目名: `tg-download-bot`
+- 项目名: `tg-downloader`
 - 目标: 通过 Telegram Bot + User API 下载媒体文件，提供 Bot 交互和 Web 控制台。
 - 运行环境: Node.js `>=20`, pnpm `10`.
 

@@ -61,6 +61,7 @@ app.use("/assets/*", serveStatic({ root: staticRoot }));
 app.use("/favicon.ico", serveStatic({ root: staticRoot }));
 app.use("/manifest.json", serveStatic({ root: staticRoot }));
 app.use("/logo.png", serveStatic({ root: staticRoot })); // adjust as needed
+app.use("/icon.svg", serveStatic({ root: staticRoot }));
 
 // For any other non-API route, serve index.html (SPA Fallback)
 // make sure this is AFTER specific API routes but BEFORE error handlers if any

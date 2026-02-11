@@ -1,4 +1,4 @@
-import { LayoutDashboard, Rocket, Settings2 } from "lucide-react"
+import { LayoutDashboard, Settings2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { NavLink } from "react-router-dom"
 import { LanguageSwitcher } from "@/components/app/language-switcher"
@@ -19,9 +19,7 @@ export function TopNav({ isInitRoute, themeMode, setThemeMode }: TopNavProps) {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Rocket className="h-4 w-4" />
-          </div>
+          <img src="/icon.svg" alt="Logo" className="h-8 w-8" />
           <p className="hidden text-lg font-bold tracking-tight md:block">{t("title")}</p>
         </div>
 

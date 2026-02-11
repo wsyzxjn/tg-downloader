@@ -1,0 +1,28 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="120" fill="#3B82F6"/>
+
+  <!-- Paper Airplane: The "Can't go wrong" classic shape -->
+  <g transform="translate(0, 0)">
+    <!-- Top/Left Wing (The main visible face) - White -->
+    <!-- Points: Tail(Left), Nose(Top-Right), Spine(Center) -->
+    <path d="M70 240 L440 80 L240 300 Z" fill="white"/>
+
+    <!-- Bottom/Right Wing (The shadowed face) - Light Blue -->
+    <!-- Points: Nose(Top-Right), Spine(Center), WingTip(Bottom) -->
+    <path d="M440 80 L240 300 L300 430 Z" fill="#D1E4FA"/>
+
+    <!-- The Fold/Fuselage (The underside depth) - Medium Blue -->
+    <!-- Points: Tail(Left), Spine(Center), WingTip(Bottom) -->
+    <path d="M70 240 L240 300 L300 430 Z" fill="#93C5FD"/>
+  </g>
+
+  <!-- Download Arrow: Simple and Bold -->
+  <g transform="translate(320, 320)">
+    <!-- Cutout/Stroke (Background Color) -->
+    <path d="M70 30 V90 H30 L100 160 L170 90 H130 V30 H70Z" stroke="#3B82F6" stroke-width="40" stroke-linejoin="round" fill="none"/>
+
+    <!-- Arrow Body (White) -->
+    <path d="M70 30 V90 H30 L100 160 L170 90 H130 V30 H70Z" fill="white"/>
+  </g>
+</svg>

@@ -1,5 +1,6 @@
 {
-  "name": "web",
+  "name": "tg-downloader-web",
+  "description": "Web console for tg-downloader",
   "private": true,
   "version": "0.0.0",
   "type": "module",
