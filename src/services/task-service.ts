@@ -424,11 +424,18 @@ async function runTask(taskId: string) {
   }
   if (!payload) {
     logTaskDebug(taskId, "run failed: payload missing");
-    task.status = "failed";
     task.updatedAt = new Date().toISOString();
+    if (task.status === "canceled") {
+      task.expiresAt = getExpiresAt();
+      emitTaskUpsert(task);
+      return;
+    }
+
+    task.status = "failed";
     task.result = {
       error: "任务参数丢失",
     };
+    task.expiresAt = getExpiresAt();
     emitTaskUpsert(task);
     return;
   }

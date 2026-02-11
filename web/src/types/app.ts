@@ -3,6 +3,7 @@ export type ThemeMode = "system" | "light" | "dark"
 export type LogLevel = "debug" | "info" | "warn" | "error"
 
 export interface Setting {
+  webUsername?: string
   botToken?: string
   apiId: number
   apiHash: string
@@ -16,6 +17,8 @@ export interface Setting {
 }
 
 export interface SettingForm {
+  webUsername: string
+  webPassword: string
   botToken: string
   apiId: string
   apiHash: string
@@ -53,6 +56,12 @@ export interface TaskRecord {
 export interface ConfigResponse {
   configured: boolean
   data: Setting | null
+}
+
+export interface WebAuthStatusResponse {
+  configured: boolean
+  authConfigured: boolean
+  authenticated: boolean
 }
 
 export interface TelegramAuthVerifyResponse {

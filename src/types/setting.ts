@@ -7,6 +7,9 @@ export type MediaType = (typeof MEDIA_TYPES)[number];
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface Setting {
+  // web auth
+  webUsername?: string;
+  webPasswordHash?: string;
   // bot
   botToken?: string;
   // personal

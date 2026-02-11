@@ -66,6 +66,10 @@
     "saving": "Saving..."
   },
   "config": {
+    "web_username": "Web Login Username",
+    "web_username_placeholder": "Enter web login username",
+    "web_password": "Web Login Password",
+    "web_password_placeholder": "Enter web login password",
     "bot_token": "Bot Token",
     "bot_token_placeholder": "123456:AA...",
     "api_id": "App ID (API ID)",
@@ -140,9 +144,13 @@
     "not_configured": "Please complete initialization first",
     "proxy_missing": "Please fill proxy host and port first",
     "proxy_test_success": "Proxy connection test passed",
-    "proxy_test_failed": "Proxy connection test failed"
+    "proxy_test_failed": "Proxy connection test failed",
+    "enter_web_credentials": "Please enter username and password",
+    "web_login_failed": "Web login failed"
   },
   "validation": {
+    "web_username_required": "Web login username is required",
+    "web_password_required": "Web login password is required",
     "api_id_required": "API ID is required",
     "api_id_invalid": "API ID must be a valid number",
     "api_hash_required": "API Hash is required",
@@ -155,6 +163,16 @@
     "proxy_host_required": "Proxy host is required",
     "proxy_port_invalid": "Proxy port must be a valid integer",
     "proxy_port_range": "Proxy port must be between 1 and 65535"
+  },
+  "login": {
+    "title": "Login",
+    "description": "Sign in with the username and password set during initialization.",
+    "username": "Username",
+    "username_placeholder": "Enter username",
+    "password": "Password",
+    "password_placeholder": "Enter password",
+    "submit": "Sign In",
+    "submitting": "Signing in..."
   },
   "init": {
     "title": "Initialize Config",

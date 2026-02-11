@@ -92,6 +92,37 @@ export function InitPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="web-username">
+                      {t("config.web_username")}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="web-username"
+                      value={form.webUsername}
+                      onChange={event =>
+                        setForm(prev => ({ ...prev, webUsername: event.target.value }))
+                      }
+                      placeholder={t("config.web_username_placeholder")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="web-password">
+                      {t("config.web_password")}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="web-password"
+                      type="password"
+                      value={form.webPassword}
+                      onChange={event =>
+                        setForm(prev => ({ ...prev, webPassword: event.target.value }))
+                      }
+                      placeholder={t("config.web_password_placeholder")}
+                    />
+                  </div>
+                </div>
                 <ConfigFields
                   form={form}
                   setForm={setForm}

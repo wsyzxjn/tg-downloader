@@ -1,5 +1,6 @@
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import {
   getSetting,
@@ -8,7 +9,9 @@ import {
   type Setting,
 } from "@/services/config-service.js";
 import {
+  type InitSettingInput,
   initSetting,
+  type UpdateSettingInput,
   updateSetting,
 } from "@/services/setting-management-service.js";
 import {
@@ -23,6 +26,15 @@ import {
   testTelegramProxyConnection,
   verifyTelegramLoginCode,
 } from "@/services/telegram-auth-service.js";
+import {
+  createWebAuthSession,
+  hasWebAuthCredentialConfigured,
+  revokeWebAuthSession,
+  validateWebAuthSession,
+  verifyWebAuthLogin,
+  WEB_AUTH_COOKIE_NAME,
+  WEB_AUTH_SESSION_MAX_AGE_SECONDS,
+} from "@/services/web-auth-service.js";
 
 interface CreateTaskPayload {
   type: "link_download";
@@ -47,9 +59,58 @@ interface VerifyLoginCodePayload extends SendLoginCodePayload {
   password?: string;
 }
 
+interface WebLoginPayload {
+  username: string;
+  password: string;
+}
+
+type ClientSetting = Omit<Setting, "webPasswordHash">;
+
 const app = new Hono();
 
 app.use("*", cors());
+
+const PUBLIC_API_PATHS = new Set([
+  "/api/health",
+  "/api/config/status",
+  "/api/config/init",
+  "/api/auth/web/status",
+  "/api/auth/web/login",
+  "/api/auth/web/logout",
+]);
+
+function toClientSetting(setting: Setting | null): ClientSetting | null {
+  if (!setting) {
+    return null;
+  }
+  const { webPasswordHash: _webPasswordHash, ...rest } = setting;
+  return rest;
+}
+
+app.use("/api/*", async (c, next) => {
+  if (PUBLIC_API_PATHS.has(c.req.path)) {
+    await next();
+    return;
+  }
+
+  const setting = getSetting();
+  if (!setting || !hasWebAuthCredentialConfigured(setting)) {
+    await next();
+    return;
+  }
+
+  const token = getCookie(c, WEB_AUTH_COOKIE_NAME);
+  if (!token || !validateWebAuthSession(token, setting.webUsername!)) {
+    return c.json(
+      {
+        message: "未登录或登录已过期，请先登录",
+      },
+      401
+    );
+  }
+
+  await next();
+});
 
 // Initialize static file serving
 const staticRoot = "./web/dist";
@@ -80,7 +141,7 @@ app.get("/api/health", c => {
 app.get("/api/config", c => {
   return c.json({
     configured: isConfigured(),
-    data: getSetting(),
+    data: toClientSetting(getSetting()),
   });
 });
 
@@ -92,12 +153,12 @@ app.get("/api/config/status", c => {
 
 app.post("/api/config/init", async c => {
   try {
-    const payload = await c.req.json<Setting>();
+    const payload = await c.req.json<InitSettingInput>();
     const setting = await initSetting(payload);
     return c.json(
       {
         message: "配置初始化完成",
-        data: setting,
+        data: toClientSetting(setting),
       },
       201
     );
@@ -113,12 +174,12 @@ app.post("/api/config/init", async c => {
 
 app.put("/api/config", async c => {
   try {
-    const payload = await c.req.json<Partial<Setting>>();
+    const payload = await c.req.json<UpdateSettingInput>();
     updateSetting(payload);
     const setting = reloadSetting();
     return c.json({
       message: "配置已更新",
-      data: setting,
+      data: toClientSetting(setting),
     });
   } catch (error) {
     return c.json(
@@ -128,6 +189,105 @@ app.put("/api/config", async c => {
       400
     );
   }
+});
+
+app.get("/api/auth/web/status", c => {
+  const setting = getSetting();
+  const authConfigured = hasWebAuthCredentialConfigured(setting);
+  const token = getCookie(c, WEB_AUTH_COOKIE_NAME);
+  const authenticated =
+    Boolean(
+      setting &&
+        authConfigured &&
+        token &&
+        validateWebAuthSession(token, setting.webUsername!)
+    ) || !authConfigured;
+
+  return c.json({
+    configured: isConfigured(),
+    authConfigured,
+    authenticated,
+  });
+});
+
+app.post("/api/auth/web/login", async c => {
+  try {
+    const setting = getSetting();
+    if (!setting || !isConfigured()) {
+      return c.json(
+        {
+          message: "配置尚未初始化，请先完成初始化",
+        },
+        400
+      );
+    }
+    if (!hasWebAuthCredentialConfigured(setting)) {
+      return c.json(
+        {
+          message: "未配置 Web 登录账号，请重新初始化配置",
+        },
+        400
+      );
+    }
+
+    const payload = await c.req.json<WebLoginPayload>();
+    if (!payload.username?.trim() || !payload.password?.trim()) {
+      return c.json(
+        {
+          message: "账号和密码不能为空",
+        },
+        400
+      );
+    }
+
+    const ok = verifyWebAuthLogin(setting, payload.username, payload.password);
+    if (!ok) {
+      return c.json(
+        {
+          message: "账号或密码错误",
+        },
+        401
+      );
+    }
+
+    const sessionToken = createWebAuthSession(setting.webUsername!);
+    setCookie(c, WEB_AUTH_COOKIE_NAME, sessionToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      path: "/",
+      maxAge: WEB_AUTH_SESSION_MAX_AGE_SECONDS,
+    });
+
+    return c.json({
+      message: "登录成功",
+      data: {
+        ok: true,
+      },
+    });
+  } catch (error) {
+    return c.json(
+      {
+        message: error instanceof Error ? error.message : "登录失败",
+      },
+      400
+    );
+  }
+});
+
+app.post("/api/auth/web/logout", c => {
+  const token = getCookie(c, WEB_AUTH_COOKIE_NAME);
+  if (token) {
+    revokeWebAuthSession(token);
+  }
+  deleteCookie(c, WEB_AUTH_COOKIE_NAME, {
+    path: "/",
+  });
+  return c.json({
+    message: "已退出登录",
+    data: {
+      ok: true,
+    },
+  });
 });
 
 app.post("/api/auth/telegram/send-code", async c => {
@@ -188,6 +348,15 @@ app.post("/api/auth/telegram/verify", async c => {
 
 app.post("/api/tasks", async c => {
   try {
+    if (!isConfigured()) {
+      return c.json(
+        {
+          message: "配置尚未初始化，请先在前端完成配置初始化。",
+        },
+        400
+      );
+    }
+
     const payload = await c.req.json<CreateTaskPayload>();
     if (payload.type !== "link_download") {
       return c.json(

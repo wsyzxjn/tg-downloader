@@ -66,6 +66,10 @@
     "saving": "保存中..."
   },
   "config": {
+    "web_username": "Web 登录账号",
+    "web_username_placeholder": "请输入登录账号",
+    "web_password": "Web 登录密码",
+    "web_password_placeholder": "请输入登录密码",
     "bot_token": "机器人令牌（Bot Token）",
     "bot_token_placeholder": "123456:AA...",
     "api_id": "应用 ID（API ID）",
@@ -140,9 +144,13 @@
     "not_configured": "请先完成配置初始化",
     "proxy_missing": "请先完整填写代理地址和端口",
     "proxy_test_success": "代理连接测试成功",
-    "proxy_test_failed": "代理连接测试失败"
+    "proxy_test_failed": "代理连接测试失败",
+    "enter_web_credentials": "请输入账号和密码",
+    "web_login_failed": "Web 登录失败"
   },
   "validation": {
+    "web_username_required": "Web 登录账号未填写",
+    "web_password_required": "Web 登录密码未填写",
     "api_id_required": "应用 ID（API ID）未填写",
     "api_id_invalid": "应用 ID（API ID）不是有效数字",
     "api_hash_required": "应用密钥（API Hash）未填写",
@@ -155,6 +163,16 @@
     "proxy_host_required": "代理地址未填写",
     "proxy_port_invalid": "代理端口必须是有效整数",
     "proxy_port_range": "代理端口必须在 1 到 65535 之间"
+  },
+  "login": {
+    "title": "登录验证",
+    "description": "请使用初始化时设置的账号密码登录控制台。",
+    "username": "账号",
+    "username_placeholder": "请输入账号",
+    "password": "密码",
+    "password_placeholder": "请输入密码",
+    "submit": "登录",
+    "submitting": "登录中..."
   },
   "init": {
     "title": "初始化配置",

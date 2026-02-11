@@ -12,6 +12,8 @@ export const MEDIA_TYPE_OPTIONS = [
 ] as const
 
 export const DEFAULT_SETTING_FORM: SettingForm = {
+  webUsername: "",
+  webPassword: "",
   botToken: "",
   apiId: "",
   apiHash: "",

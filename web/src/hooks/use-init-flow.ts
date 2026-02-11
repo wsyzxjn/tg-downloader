@@ -11,15 +11,22 @@ import {
   verifyTelegramLogin,
 } from "@/services/api"
 import type { Setting, SettingForm } from "@/types/app"
-import { buildProxyUrl, normalizeSettingPayload, toForm, validateStepOne } from "@/utils/app"
+import {
+  buildProxyUrl,
+  normalizeInitSettingPayload,
+  normalizeSettingPayload,
+  toForm,
+  validateStepOne,
+} from "@/utils/app"
 
 interface UseInitFlowParams {
-  navigateTo: (path: "/" | "/init") => void
+  navigateTo: (path: "/tasks" | "/init" | "/login") => void
   onNotice: (message: string) => void
 }
 
 interface UseInitFlowResult {
   configured: boolean | null
+  setConfigured: Dispatch<SetStateAction<boolean | null>>
   initStep: 1 | 2
   savingConfig: boolean
   sendingCode: boolean
@@ -141,12 +148,13 @@ export function useInitFlow({ navigateTo, onNotice }: UseInitFlowParams): UseIni
 
     setSavingConfig(true)
     try {
-      const payload = normalizeSettingPayload(form, allowedUserIdsInput, mediaTypes, t, authSession)
-      const setting = await initConfig(payload)
+      const setting = await initConfig(
+        normalizeInitSettingPayload(form, allowedUserIdsInput, mediaTypes, t, authSession)
+      )
       setConfigured(true)
       syncForm(setting)
       onNotice(t("messages.init_complete"))
-      navigateTo("/")
+      navigateTo("/tasks")
     } catch (error) {
       onNotice(error instanceof Error ? error.message : t("messages.init_failed"))
     } finally {
@@ -302,6 +310,7 @@ export function useInitFlow({ navigateTo, onNotice }: UseInitFlowParams): UseIni
 
   return {
     configured,
+    setConfigured,
     initStep,
     savingConfig,
     sendingCode,

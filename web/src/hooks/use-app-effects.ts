@@ -3,6 +3,12 @@ import type { TaskRecord } from "@/types/app"
 
 interface UseInitialLoadParams {
   isInitRoute: boolean
+  isLoginRoute: boolean
+  loadAuthStatus: () => Promise<{
+    configured: boolean
+    authConfigured: boolean
+    authenticated: boolean
+  }>
   loadConfig: () => Promise<void>
   loadTasks: () => Promise<void>
   setLoading: (loading: boolean) => void
@@ -11,6 +17,8 @@ interface UseInitialLoadParams {
 
 export function useInitialLoad({
   isInitRoute,
+  isLoginRoute,
+  loadAuthStatus,
   loadConfig,
   loadTasks,
   setLoading,
@@ -22,10 +30,16 @@ export function useInitialLoad({
     const initialize = async () => {
       try {
         setLoading(true)
+        const status = await loadAuthStatus()
+        if (status.configured && status.authConfigured && !status.authenticated) {
+          return
+        }
         if (isInitRoute) {
           await loadConfig()
-        } else {
+        } else if (!isLoginRoute) {
           await Promise.all([loadConfig(), loadTasks()])
+        } else {
+          await loadConfig()
         }
       } catch {
         if (!unmounted) {
@@ -43,18 +57,28 @@ export function useInitialLoad({
     return () => {
       unmounted = true
     }
-  }, [isInitRoute, loadConfig, loadTasks, onLoadError, setLoading])
+  }, [isInitRoute, isLoginRoute, loadAuthStatus, loadConfig, loadTasks, onLoadError, setLoading])
 }
 
 interface UseRouteGuardParams {
   configured: boolean | null
+  authConfigured: boolean | null
+  authenticated: boolean | null
   isInitRoute: boolean
-  navigateTo: (path: "/" | "/init") => void
+  isLoginRoute: boolean
+  navigateTo: (path: "/tasks" | "/init" | "/login") => void
 }
 
-export function useRouteGuard({ configured, isInitRoute, navigateTo }: UseRouteGuardParams) {
+export function useRouteGuard({
+  configured,
+  authConfigured,
+  authenticated,
+  isInitRoute,
+  isLoginRoute,
+  navigateTo,
+}: UseRouteGuardParams) {
   useEffect(() => {
-    if (configured === null) {
+    if (configured === null || authConfigured === null || authenticated === null) {
       return
     }
 
@@ -63,15 +87,30 @@ export function useRouteGuard({ configured, isInitRoute, navigateTo }: UseRouteG
       return
     }
 
-    if (configured && isInitRoute) {
-      navigateTo("/")
+    if (!configured) {
+      return
     }
-  }, [configured, isInitRoute, navigateTo])
+
+    if (authConfigured && !authenticated && !isLoginRoute) {
+      navigateTo("/login")
+      return
+    }
+
+    if (authConfigured && !authenticated) {
+      return
+    }
+
+    if (isLoginRoute || isInitRoute) {
+      navigateTo("/tasks")
+    }
+  }, [authenticated, authConfigured, configured, isInitRoute, isLoginRoute, navigateTo])
 }
 
 interface UseTaskPollingParams {
   isInitRoute: boolean
+  isLoginRoute: boolean
   configured: boolean | null
+  authenticated: boolean | null
   loadTasks: () => Promise<void>
   replaceTasks: (tasks: TaskRecord[]) => void
   upsertTask: (task: TaskRecord) => void
@@ -98,14 +137,16 @@ function parseSseEventData<T>(event: MessageEvent<string>): T | null {
 
 export function useTaskPolling({
   isInitRoute,
+  isLoginRoute,
   configured,
+  authenticated,
   loadTasks,
   replaceTasks,
   upsertTask,
   removeTask,
 }: UseTaskPollingParams) {
   useEffect(() => {
-    if (isInitRoute || !configured) {
+    if (isInitRoute || isLoginRoute || !configured || !authenticated) {
       return
     }
 
@@ -179,5 +220,14 @@ export function useTaskPolling({
       clearReconnectTimer()
       eventSource?.close()
     }
-  }, [configured, isInitRoute, loadTasks, removeTask, replaceTasks, upsertTask])
+  }, [
+    authenticated,
+    configured,
+    isInitRoute,
+    isLoginRoute,
+    loadTasks,
+    removeTask,
+    replaceTasks,
+    upsertTask,
+  ])
 }

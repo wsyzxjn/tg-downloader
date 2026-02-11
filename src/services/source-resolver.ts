@@ -175,8 +175,25 @@ async function getSourceMessageFromBotDialog(message: Message) {
  * @returns 解析结果；链接非法时返回 null
  */
 function parseTgMessageLink(messageLink: string) {
-  const url = new URL(messageLink);
-  if (!["t.me", "telegram.me", "www.t.me"].includes(url.hostname)) {
+  const raw = messageLink.trim();
+  if (!raw) {
+    return null;
+  }
+
+  const normalized =
+    raw.startsWith("http://") || raw.startsWith("https://")
+      ? raw
+      : `https://${raw}`;
+
+  let url: URL;
+  try {
+    url = new URL(normalized);
+  } catch {
+    return null;
+  }
+
+  const host = url.hostname.toLowerCase();
+  if (!["t.me", "telegram.me", "www.t.me"].includes(host)) {
     return null;
   }
 

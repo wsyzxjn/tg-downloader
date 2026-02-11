@@ -1,4 +1,10 @@
-import type { ConfigResponse, Setting, TaskRecord, TelegramAuthVerifyResponse } from "@/types/app"
+import type {
+  ConfigResponse,
+  Setting,
+  TaskRecord,
+  TelegramAuthVerifyResponse,
+  WebAuthStatusResponse,
+} from "@/types/app"
 
 interface ApiEnvelope<T> {
   data?: T
@@ -25,6 +31,16 @@ export interface TestProxyPayload {
   apiId: number
   apiHash: string
   proxy?: string
+}
+
+export interface InitSettingPayload extends Setting {
+  webUsername: string
+  webPassword: string
+}
+
+export interface WebLoginPayload {
+  username: string
+  password: string
 }
 
 export async function parseApiJson(response: Response): Promise<Record<string, unknown>> {
@@ -58,6 +74,37 @@ export async function fetchConfig(): Promise<ConfigResponse> {
   return json
 }
 
+export async function fetchWebAuthStatus(): Promise<WebAuthStatusResponse> {
+  const response = await fetch("/api/auth/web/status")
+  const json = await parseApiJson(response)
+  if (!response.ok) {
+    throw new Error(typeof json.message === "string" ? json.message : "获取登录状态失败")
+  }
+  return {
+    configured: Boolean(json.configured),
+    authConfigured: Boolean(json.authConfigured),
+    authenticated: Boolean(json.authenticated),
+  }
+}
+
+export async function loginWeb(payload: WebLoginPayload): Promise<void> {
+  const response = await fetch("/api/auth/web/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+  await readDataOrThrow<unknown>(response, "登录失败")
+}
+
+export async function logoutWeb(): Promise<void> {
+  const response = await fetch("/api/auth/web/logout", {
+    method: "POST",
+  })
+  await readDataOrThrow<unknown>(response, "退出登录失败")
+}
+
 export async function fetchTasks(): Promise<TaskRecord[]> {
   const response = await fetch("/api/tasks")
   return readDataOrThrow<TaskRecord[]>(response, "加载任务失败")
@@ -74,7 +121,7 @@ export async function saveConfig(payload: Setting): Promise<Setting> {
   return readDataOrThrow<Setting>(response, "保存失败")
 }
 
-export async function initConfig(payload: Setting): Promise<Setting> {
+export async function initConfig(payload: InitSettingPayload): Promise<Setting> {
   const response = await fetch("/api/config/init", {
     method: "POST",
     headers: {

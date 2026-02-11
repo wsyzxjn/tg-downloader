@@ -48,6 +48,8 @@ export function toForm(setting: Setting): SettingForm {
   }
 
   return {
+    webUsername: setting.webUsername || "",
+    webPassword: "",
     botToken: setting.botToken || "",
     apiId: String(setting.apiId),
     apiHash: setting.apiHash,
@@ -111,6 +113,14 @@ export function validateStepOne(
   t: TFunction
 ): string[] {
   const issues: string[] = []
+
+  if (!form.webUsername.trim()) {
+    issues.push(t("validation.web_username_required"))
+  }
+
+  if (!form.webPassword.trim()) {
+    issues.push(t("validation.web_password_required"))
+  }
 
   if (!form.apiId.trim()) {
     issues.push(t("validation.api_id_required"))
@@ -205,5 +215,30 @@ export function normalizeSettingPayload(
     allowedUserIds: parseCsvNumbers(allowedUserIdsInput, t),
     mediaTypes,
     proxy,
+  }
+}
+
+export function normalizeInitSettingPayload(
+  form: SettingForm,
+  allowedUserIdsInput: string,
+  mediaTypes: string[],
+  t: TFunction,
+  session: string
+) {
+  const payload = normalizeSettingPayload(form, allowedUserIdsInput, mediaTypes, t, session)
+  const webUsername = form.webUsername.trim()
+  const webPassword = form.webPassword.trim()
+
+  if (!webUsername) {
+    throw new Error(t("validation.web_username_required"))
+  }
+  if (!webPassword) {
+    throw new Error(t("validation.web_password_required"))
+  }
+
+  return {
+    ...payload,
+    webUsername,
+    webPassword,
   }
 }

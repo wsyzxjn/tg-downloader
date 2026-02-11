@@ -13,11 +13,26 @@ import {
   saveSetting,
 } from "@/services/config-service.js";
 import { createLogger } from "@/services/logger.js";
+import {
+  createWebAuthCredential,
+  revokeAllWebAuthSessions,
+} from "@/services/web-auth-service.js";
 
 const logger = createLogger("setting-management");
 let selfUserIdCache: number | null = null;
 let resolvingSelfUserId: Promise<number> | null = null;
 let currentClientKey = "";
+
+type SettingBaseInput = Omit<Setting, "webPasswordHash">;
+
+export interface InitSettingInput extends SettingBaseInput {
+  webUsername: string;
+  webPassword: string;
+}
+
+export interface UpdateSettingInput extends Partial<SettingBaseInput> {
+  webPassword?: string;
+}
 
 function validateMediaTypes(mediaTypes: string[]) {
   for (const mediaType of mediaTypes) {
@@ -112,7 +127,7 @@ async function resolveSelfUserId(setting: Setting): Promise<number> {
   return resolvingSelfUserId;
 }
 
-function validateSettingShape(setting: Partial<Setting>) {
+function validateSettingShape(setting: Partial<SettingBaseInput>) {
   if (setting.botToken !== undefined && typeof setting.botToken !== "string") {
     throw new Error("botToken 必须是字符串");
   }
@@ -155,7 +170,16 @@ function validateSettingShape(setting: Partial<Setting>) {
   }
 }
 
-export function updateSetting(patch: Partial<Setting>) {
+function validateWebAuthInput(username: string, password: string) {
+  if (!username.trim()) {
+    throw new Error("webUsername 必填且必须是字符串");
+  }
+  if (!password.trim()) {
+    throw new Error("webPassword 必填且必须是字符串");
+  }
+}
+
+export function updateSetting(patch: UpdateSettingInput) {
   if (!isConfigured()) {
     throw new Error("配置尚未初始化，请先调用初始化接口");
   }
@@ -187,6 +211,12 @@ export function updateSetting(patch: Partial<Setting>) {
   if (patch.apiId !== undefined && typeof patch.apiId !== "number") {
     throw new Error("apiId 必须是数字");
   }
+  if (
+    patch.webPassword !== undefined &&
+    typeof patch.webPassword !== "string"
+  ) {
+    throw new Error("webPassword 必须是字符串");
+  }
   if (patch.logLevel !== undefined) {
     if (
       patch.logLevel !== "debug" &&
@@ -213,41 +243,81 @@ export function updateSetting(patch: Partial<Setting>) {
   }
 
   const currentSetting = getSetting();
-  const stringFields: Array<keyof Setting> = [
+  if (!currentSetting) {
+    throw new Error("配置尚未初始化，请先调用初始化接口");
+  }
+
+  const { webPassword, ...restPatch } = patch;
+  const stringFields = [
     "botToken",
     "apiHash",
     "session",
     "downloadDir",
     "proxy",
-  ];
+    "webUsername",
+  ] as const;
   for (const field of stringFields) {
-    const value = patch[field];
+    const value = restPatch[field];
     if (value !== undefined && typeof value !== "string") {
       throw new Error(`${field} 必须是字符串`);
     }
   }
 
   const nextSetting: Setting = {
-    ...currentSetting!,
-    ...patch,
+    ...currentSetting,
+    ...restPatch,
   };
+
+  if (patch.webUsername !== undefined || webPassword !== undefined) {
+    const nextUsername = (
+      patch.webUsername ??
+      (currentSetting?.webUsername || "")
+    ).trim();
+    const nextPassword = webPassword?.trim();
+
+    if (!nextUsername) {
+      throw new Error("webUsername 必填且必须是字符串");
+    }
+
+    if (webPassword !== undefined) {
+      if (!nextPassword) {
+        throw new Error("webPassword 必填且必须是字符串");
+      }
+      const credentials = createWebAuthCredential(nextUsername, nextPassword);
+      nextSetting.webUsername = credentials.webUsername;
+      nextSetting.webPasswordHash = credentials.webPasswordHash;
+      revokeAllWebAuthSessions();
+    } else {
+      nextSetting.webUsername = nextUsername;
+      revokeAllWebAuthSessions();
+    }
+  }
+
   const saved = saveSetting(nextSetting);
   reloadSetting();
   return saved;
 }
 
-export async function initSetting(setting: Setting): Promise<Setting> {
+export async function initSetting(input: InitSettingInput): Promise<Setting> {
   if (isConfigured()) {
     throw new Error("配置已存在，请使用更新接口");
   }
 
-  validateSettingShape(setting);
-  validateMediaTypes(setting.mediaTypes);
+  validateSettingShape(input);
+  validateMediaTypes(input.mediaTypes);
+  validateWebAuthInput(input.webUsername, input.webPassword);
+  const credentials = createWebAuthCredential(
+    input.webUsername,
+    input.webPassword
+  );
+  const { webPassword: _webPassword, ...setting } = input;
 
   const normalizedSetting: Setting =
     setting.allowedUserIds.length === 0
       ? {
           ...setting,
+          webUsername: credentials.webUsername,
+          webPasswordHash: credentials.webPasswordHash,
           downloadFileConcurrency:
             setting.downloadFileConcurrency ??
             DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
@@ -256,6 +326,8 @@ export async function initSetting(setting: Setting): Promise<Setting> {
         }
       : {
           ...setting,
+          webUsername: credentials.webUsername,
+          webPasswordHash: credentials.webPasswordHash,
           downloadFileConcurrency:
             setting.downloadFileConcurrency ??
             DEFAULT_DOWNLOAD_FILE_CONCURRENCY,

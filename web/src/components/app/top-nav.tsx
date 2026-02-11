@@ -7,12 +7,12 @@ import { cn } from "@/lib/utils"
 import type { ThemeMode } from "@/types/app"
 
 interface TopNavProps {
-  isInitRoute: boolean
+  isPublicRoute: boolean
   themeMode: ThemeMode
   setThemeMode: (mode: ThemeMode) => void
 }
 
-export function TopNav({ isInitRoute, themeMode, setThemeMode }: TopNavProps) {
+export function TopNav({ isPublicRoute, themeMode, setThemeMode }: TopNavProps) {
   const { t } = useTranslation()
 
   return (
@@ -23,7 +23,7 @@ export function TopNav({ isInitRoute, themeMode, setThemeMode }: TopNavProps) {
           <p className="hidden text-lg font-bold tracking-tight md:block">{t("title")}</p>
         </div>
 
-        {!isInitRoute ? (
+        {!isPublicRoute ? (
           <nav className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border bg-background/50 p-1 shadow-sm backdrop-blur-sm">
             <NavLink
               to="/tasks"
