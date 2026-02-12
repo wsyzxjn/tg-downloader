@@ -13,19 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { TaskRecord, TaskStatus } from "@/types/app"
+import { useAppFlow, useAppUi } from "@/context/app-context"
+import type { TaskStatus } from "@/types/app"
 import { statusTone, taskTypeLabel } from "@/utils/app"
-
-interface TasksPageProps {
-  loading: boolean
-  creatingTask: boolean
-  cancelingTaskId: string | null
-  linkInput: string
-  setLinkInput: (value: string) => void
-  onCreateTask: () => void
-  onCancelTask: (taskId: string) => void
-  tasks: TaskRecord[]
-}
 
 function normalizeProgressPercent(status: TaskStatus, percent: number): number {
   if (status === "completed") {
@@ -34,17 +24,10 @@ function normalizeProgressPercent(status: TaskStatus, percent: number): number {
   return Math.max(0, Math.min(100, percent))
 }
 
-export function TasksPage({
-  loading,
-  creatingTask,
-  cancelingTaskId,
-  linkInput,
-  setLinkInput,
-  onCreateTask,
-  onCancelTask,
-  tasks,
-}: TasksPageProps) {
+export function TasksPage() {
   const { t } = useTranslation()
+  const { taskActions } = useAppFlow()
+  const { loading } = useAppUi()
 
   const formatSpeed = (speedBytesPerSec: number | undefined) => {
     if (!speedBytesPerSec || speedBytesPerSec <= 0) {
@@ -81,18 +64,18 @@ export function TasksPage({
                 <Input
                   id="link"
                   placeholder={t("tasks.create.link_placeholder")}
-                  value={linkInput}
-                  onChange={event => setLinkInput(event.target.value)}
+                  value={taskActions.linkInput}
+                  onChange={event => taskActions.setLinkInput(event.target.value)}
                   className="pl-9"
                 />
               </div>
             </div>
             <Button
-              disabled={creatingTask || loading}
-              onClick={onCreateTask}
+              disabled={taskActions.creatingTask || loading}
+              onClick={() => void taskActions.handleCreateTask()}
               className="min-w-[140px] shadow-sm"
             >
-              {creatingTask ? (
+              {taskActions.creatingTask ? (
                 <>
                   <Send className="mr-2 h-4 w-4 animate-pulse" />
                   {t("tasks.create.creating")}
@@ -142,16 +125,14 @@ export function TasksPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.map(task => {
+                {taskActions.tasks.map(task => {
                   const progressPercent = normalizeProgressPercent(
                     task.status,
                     task.progress.percent
                   )
 
-                  // Keep single color for progress bar
                   const progressColorClass = "bg-primary"
 
-                  // Determine row style
                   const isCanceled = task.status === "canceled"
                   const rowClass = isCanceled
                     ? "group transition-colors hover:bg-muted/30 opacity-60 grayscale-[0.5]"
@@ -213,11 +194,11 @@ export function TasksPage({
                           <Button
                             variant="outline"
                             size="sm"
-                            disabled={cancelingTaskId === task.id}
-                            onClick={() => onCancelTask(task.id)}
+                            disabled={taskActions.cancelingTaskId === task.id}
+                            onClick={() => void taskActions.handleCancelTask(task.id)}
                             className="h-7 text-xs whitespace-nowrap"
                           >
-                            {cancelingTaskId === task.id
+                            {taskActions.cancelingTaskId === task.id
                               ? t("tasks.actions.canceling")
                               : t("tasks.actions.cancel")}
                           </Button>
@@ -228,7 +209,7 @@ export function TasksPage({
                     </TableRow>
                   )
                 })}
-                {tasks.length === 0 ? (
+                {taskActions.tasks.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="h-[300px] text-center">
                       <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">

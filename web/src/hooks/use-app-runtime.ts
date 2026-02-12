@@ -1,9 +1,12 @@
 import { useEffect } from "react"
 import type { TaskRecord } from "@/types/app"
 
-interface UseInitialLoadParams {
+interface UseAppRuntimeParams {
   isInitRoute: boolean
   isLoginRoute: boolean
+  configured: boolean | null
+  authConfigured: boolean | null
+  authenticated: boolean | null
   loadAuthStatus: () => Promise<{
     configured: boolean
     authConfigured: boolean
@@ -13,17 +16,46 @@ interface UseInitialLoadParams {
   loadTasks: () => Promise<void>
   setLoading: (loading: boolean) => void
   onLoadError: (message: string) => void
+  navigateTo: (path: "/tasks" | "/init" | "/login") => void
+  replaceTasks: (tasks: TaskRecord[]) => void
+  upsertTask: (task: TaskRecord) => void
+  removeTask: (taskId: string) => void
 }
 
-export function useInitialLoad({
+interface TaskStreamSnapshotEvent {
+  tasks: TaskRecord[]
+}
+
+interface TaskStreamUpdateEvent {
+  type: "upsert" | "remove"
+  taskId: string
+  task?: TaskRecord
+}
+
+function parseSseEventData<T>(event: MessageEvent<string>): T | null {
+  try {
+    return JSON.parse(event.data) as T
+  } catch {
+    return null
+  }
+}
+
+export function useAppRuntime({
   isInitRoute,
   isLoginRoute,
+  configured,
+  authConfigured,
+  authenticated,
   loadAuthStatus,
   loadConfig,
   loadTasks,
   setLoading,
   onLoadError,
-}: UseInitialLoadParams) {
+  navigateTo,
+  replaceTasks,
+  upsertTask,
+  removeTask,
+}: UseAppRuntimeParams) {
   useEffect(() => {
     let unmounted = false
 
@@ -58,25 +90,7 @@ export function useInitialLoad({
       unmounted = true
     }
   }, [isInitRoute, isLoginRoute, loadAuthStatus, loadConfig, loadTasks, onLoadError, setLoading])
-}
 
-interface UseRouteGuardParams {
-  configured: boolean | null
-  authConfigured: boolean | null
-  authenticated: boolean | null
-  isInitRoute: boolean
-  isLoginRoute: boolean
-  navigateTo: (path: "/tasks" | "/init" | "/login") => void
-}
-
-export function useRouteGuard({
-  configured,
-  authConfigured,
-  authenticated,
-  isInitRoute,
-  isLoginRoute,
-  navigateTo,
-}: UseRouteGuardParams) {
   useEffect(() => {
     if (configured === null || authConfigured === null || authenticated === null) {
       return
@@ -104,47 +118,7 @@ export function useRouteGuard({
       navigateTo("/tasks")
     }
   }, [authenticated, authConfigured, configured, isInitRoute, isLoginRoute, navigateTo])
-}
 
-interface UseTaskPollingParams {
-  isInitRoute: boolean
-  isLoginRoute: boolean
-  configured: boolean | null
-  authenticated: boolean | null
-  loadTasks: () => Promise<void>
-  replaceTasks: (tasks: TaskRecord[]) => void
-  upsertTask: (task: TaskRecord) => void
-  removeTask: (taskId: string) => void
-}
-
-interface TaskStreamSnapshotEvent {
-  tasks: TaskRecord[]
-}
-
-interface TaskStreamUpdateEvent {
-  type: "upsert" | "remove"
-  taskId: string
-  task?: TaskRecord
-}
-
-function parseSseEventData<T>(event: MessageEvent<string>): T | null {
-  try {
-    return JSON.parse(event.data) as T
-  } catch {
-    return null
-  }
-}
-
-export function useTaskPolling({
-  isInitRoute,
-  isLoginRoute,
-  configured,
-  authenticated,
-  loadTasks,
-  replaceTasks,
-  upsertTask,
-  removeTask,
-}: UseTaskPollingParams) {
   useEffect(() => {
     if (isInitRoute || isLoginRoute || !configured || !authenticated) {
       return

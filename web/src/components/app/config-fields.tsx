@@ -1,23 +1,11 @@
 import { Aperture, FileText, Film, Image, Mic, Music, Smile, Video } from "lucide-react"
-import type { Dispatch, SetStateAction } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MEDIA_TYPE_OPTIONS } from "@/constants/app"
+import { useAppFlow } from "@/context/app-context"
 import { cn } from "@/lib/utils"
-import type { SettingForm } from "@/types/app"
-
-interface ConfigFieldsProps {
-  form: SettingForm
-  setForm: Dispatch<SetStateAction<SettingForm>>
-  allowedUserIdsInput: string
-  setAllowedUserIdsInput: Dispatch<SetStateAction<string>>
-  mediaTypes: string[]
-  toggleMediaType: (mediaType: string) => void
-  testingProxy: boolean
-  onTestProxy: () => void
-}
 
 const MEDIA_ICONS: Record<string, React.ElementType> = {
   photo: Image,
@@ -30,17 +18,18 @@ const MEDIA_ICONS: Record<string, React.ElementType> = {
   sticker: Smile,
 }
 
-export function ConfigFields({
-  form,
-  setForm,
-  allowedUserIdsInput,
-  setAllowedUserIdsInput,
-  mediaTypes,
-  toggleMediaType,
-  testingProxy,
-  onTestProxy,
-}: ConfigFieldsProps) {
+export function ConfigFields() {
   const { t } = useTranslation()
+  const { initFlow } = useAppFlow()
+  const {
+    allowedUserIdsInput,
+    form,
+    mediaTypes,
+    setAllowedUserIdsInput,
+    setForm,
+    testingProxy,
+    toggleMediaType,
+  } = initFlow
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -65,7 +54,12 @@ export function ConfigFields({
         <Input
           id="api-id"
           value={form.apiId}
-          onChange={event => setForm(prev => ({ ...prev, apiId: event.target.value }))}
+          onChange={event =>
+            setForm(prev => ({
+              ...prev,
+              apiId: event.target.value,
+            }))
+          }
           placeholder={t("config.api_id_placeholder")}
           className="font-mono text-sm"
         />
@@ -78,16 +72,21 @@ export function ConfigFields({
         </Label>
         <Input
           id="api-hash"
+          type="password"
           value={form.apiHash}
-          onChange={event => setForm(prev => ({ ...prev, apiHash: event.target.value }))}
+          onChange={event =>
+            setForm(prev => ({
+              ...prev,
+              apiHash: event.target.value,
+            }))
+          }
           placeholder={t("config.api_hash_placeholder")}
           className="font-mono text-sm"
         />
       </div>
 
-      <div className="space-y-3 md:col-span-2">
-        <Label className="text-sm font-medium text-foreground">{t("config.proxy")}</Label>
-        <div className="grid gap-3 md:grid-cols-5">
+      <div className="space-y-4 rounded-lg border border-border/50 bg-muted/20 p-4 md:col-span-2">
+        <div className="grid gap-3 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="proxy-type" className="text-xs text-muted-foreground">
               {t("config.proxy_type")}
@@ -98,10 +97,10 @@ export function ConfigFields({
               onChange={event =>
                 setForm(prev => ({
                   ...prev,
-                  proxyType: event.target.value as "none" | "socks4" | "socks5",
+                  proxyType: event.target.value as "none" | "socks5" | "socks4",
                 }))
               }
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
             >
               <option value="none">{t("config.proxy_type_none")}</option>
               <option value="socks5">SOCKS5</option>
@@ -138,13 +137,12 @@ export function ConfigFields({
           </div>
 
           <div className="space-y-2">
-            {/* Invisible label to align button with inputs that have labels */}
             <Label className="text-xs opacity-0 select-none">&nbsp;</Label>
             <Button
               type="button"
               variant="outline"
               className="w-full"
-              onClick={onTestProxy}
+              onClick={() => void initFlow.handleTestProxy()}
               disabled={testingProxy || form.proxyType === "none"}
             >
               {testingProxy ? t("config.testing_proxy") : t("config.test_proxy")}
@@ -278,50 +276,23 @@ export function ConfigFields({
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {MEDIA_TYPE_OPTIONS.map(mediaType => {
             const Icon = MEDIA_ICONS[mediaType] || FileText
-            const isSelected = mediaTypes.includes(mediaType)
+            const selected = mediaTypes.includes(mediaType)
+
             return (
-              <label
+              <button
                 key={mediaType}
+                type="button"
+                onClick={() => toggleMediaType(mediaType)}
                 className={cn(
-                  "relative flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50",
-                  isSelected
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border bg-card text-muted-foreground hover:border-border/80"
+                  "flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors",
+                  selected
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-input bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
                 )}
               >
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => toggleMediaType(mediaType)}
-                  className="sr-only"
-                />
-                <div
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
-                    isSelected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div className="space-y-0.5">
-                  <span
-                    className={cn(
-                      "block text-sm font-medium transition-colors",
-                      isSelected ? "text-foreground" : "text-muted-foreground"
-                    )}
-                  >
-                    {mediaType}
-                  </span>
-                  <span className="block text-[10px] text-muted-foreground/70">
-                    {t(`config.media_labels.${mediaType}` as const)}
-                  </span>
-                </div>
-                {isSelected && (
-                  <div className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" />
-                )}
-              </label>
+                <Icon className="h-4 w-4" />
+                {t(`config.media_labels.${mediaType}` as const)}
+              </button>
             )
           })}
         </div>

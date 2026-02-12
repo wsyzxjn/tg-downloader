@@ -1,5 +1,4 @@
 import { Save } from "lucide-react"
-import type { Dispatch, SetStateAction } from "react"
 import { useTranslation } from "react-i18next"
 import { ConfigFields } from "@/components/app/config-fields"
 import { Badge } from "@/components/ui/badge"
@@ -7,72 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { SettingForm } from "@/types/app"
+import { useAppFlow, useAppUi } from "@/context/app-context"
 
-interface InitPageProps {
-  initStep: 1 | 2
-  loading: boolean
-  savingConfig: boolean
-  form: SettingForm
-  setForm: Dispatch<SetStateAction<SettingForm>>
-  allowedUserIdsInput: string
-  setAllowedUserIdsInput: Dispatch<SetStateAction<string>>
-  mediaTypes: string[]
-  toggleMediaType: (mediaType: string) => void
-  testingProxy: boolean
-  initStepOneIssues: string[]
-  canProceedInitStepOne: boolean
-  authPhoneNumber: string
-  setAuthPhoneNumber: (value: string) => void
-  authCodeSent: boolean
-  authCode: string
-  setAuthCode: (value: string) => void
-  authPassword: string
-  setAuthPassword: (value: string) => void
-  authSession: string
-  authIdentity: string
-  sendingCode: boolean
-  verifyingCode: boolean
-  onInitStepNext: () => void
-  onBackToStepOne: () => void
-  onSendLoginCode: () => void
-  onVerifyLogin: () => void
-  onInitConfig: () => void
-  onTestProxy: () => void
-}
-
-export function InitPage({
-  initStep,
-  loading,
-  savingConfig,
-  form,
-  setForm,
-  allowedUserIdsInput,
-  setAllowedUserIdsInput,
-  mediaTypes,
-  toggleMediaType,
-  testingProxy,
-  initStepOneIssues,
-  canProceedInitStepOne,
-  authPhoneNumber,
-  setAuthPhoneNumber,
-  authCodeSent,
-  authCode,
-  setAuthCode,
-  authPassword,
-  setAuthPassword,
-  authSession,
-  authIdentity,
-  sendingCode,
-  verifyingCode,
-  onInitStepNext,
-  onBackToStepOne,
-  onSendLoginCode,
-  onVerifyLogin,
-  onInitConfig,
-  onTestProxy,
-}: InitPageProps) {
+export function InitPage() {
   const { t } = useTranslation()
+  const { initFlow } = useAppFlow()
+  const { loading } = useAppUi()
 
   return (
     <Card className="overflow-hidden border-border/60 bg-card/60 shadow-md backdrop-blur-md transition-all">
@@ -81,9 +20,9 @@ export function InitPage({
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-slate-600 dark:text-slate-300">{t("init.description")}</p>
-        <Badge variant="outline">{t("init.subtitle", { step: initStep })}</Badge>
+        <Badge variant="outline">{t("init.subtitle", { step: initFlow.initStep })}</Badge>
 
-        {initStep === 1 ? (
+        {initFlow.initStep === 1 ? (
           <>
             <Card>
               <CardHeader className="border-b border-border/40 bg-muted/20 pb-4">
@@ -100,9 +39,9 @@ export function InitPage({
                     </Label>
                     <Input
                       id="web-username"
-                      value={form.webUsername}
+                      value={initFlow.form.webUsername}
                       onChange={event =>
-                        setForm(prev => ({ ...prev, webUsername: event.target.value }))
+                        initFlow.setForm(prev => ({ ...prev, webUsername: event.target.value }))
                       }
                       placeholder={t("config.web_username_placeholder")}
                     />
@@ -115,37 +54,31 @@ export function InitPage({
                     <Input
                       id="web-password"
                       type="password"
-                      value={form.webPassword}
+                      value={initFlow.form.webPassword}
                       onChange={event =>
-                        setForm(prev => ({ ...prev, webPassword: event.target.value }))
+                        initFlow.setForm(prev => ({ ...prev, webPassword: event.target.value }))
                       }
                       placeholder={t("config.web_password_placeholder")}
                     />
                   </div>
                 </div>
-                <ConfigFields
-                  form={form}
-                  setForm={setForm}
-                  allowedUserIdsInput={allowedUserIdsInput}
-                  setAllowedUserIdsInput={setAllowedUserIdsInput}
-                  mediaTypes={mediaTypes}
-                  toggleMediaType={toggleMediaType}
-                  testingProxy={testingProxy}
-                  onTestProxy={onTestProxy}
-                />
-                {canProceedInitStepOne ? (
+                <ConfigFields />
+                {initFlow.canProceedInitStepOne ? (
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     {t("init.step1.description")}
                   </p>
                 ) : (
                   <p className="text-xs text-red-600">
-                    {t("init.step1.error", { error: initStepOneIssues[0] })}
+                    {t("init.step1.error", { error: initFlow.initStepOneIssues[0] })}
                   </p>
                 )}
               </CardContent>
             </Card>
             <div className="flex justify-end">
-              <Button disabled={loading || !canProceedInitStepOne} onClick={onInitStepNext}>
+              <Button
+                disabled={loading || !initFlow.canProceedInitStepOne}
+                onClick={initFlow.handleInitStepNext}
+              >
                 {t("init.step1.next")}
               </Button>
             </div>
@@ -163,84 +96,73 @@ export function InitPage({
                   <Label htmlFor="auth-phone">{t("init.step2.phone_label")}</Label>
                   <Input
                     id="auth-phone"
-                    value={authPhoneNumber}
-                    onChange={event => setAuthPhoneNumber(event.target.value)}
+                    value={initFlow.authPhoneNumber}
+                    onChange={event => initFlow.setAuthPhoneNumber(event.target.value)}
                     placeholder={t("init.step2.phone_placeholder")}
                   />
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={sendingCode || verifyingCode || loading}
-                    onClick={onSendLoginCode}
-                  >
-                    {sendingCode ? t("init.step2.sending_code") : t("init.step2.send_code")}
-                  </Button>
-                </div>
-
-                {authCodeSent ? (
+                {initFlow.authCodeSent ? (
                   <>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="auth-code">{t("init.step2.code_label")}</Label>
-                        <Input
-                          id="auth-code"
-                          value={authCode}
-                          onChange={event => setAuthCode(event.target.value)}
-                          placeholder={t("init.step2.code_placeholder")}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="auth-password">{t("init.step2.password_label")}</Label>
-                        <Input
-                          id="auth-password"
-                          type="password"
-                          value={authPassword}
-                          onChange={event => setAuthPassword(event.target.value)}
-                          placeholder={t("init.step2.password_placeholder")}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="auth-code">{t("init.step2.code_label")}</Label>
+                      <Input
+                        id="auth-code"
+                        value={initFlow.authCode}
+                        onChange={event => initFlow.setAuthCode(event.target.value)}
+                        placeholder={t("init.step2.code_placeholder")}
+                      />
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        disabled={sendingCode || verifyingCode || loading}
-                        onClick={onVerifyLogin}
-                      >
-                        {verifyingCode
-                          ? t("init.step2.verifying_code")
-                          : t("init.step2.verify_code")}
-                      </Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="auth-password">{t("init.step2.password_label")}</Label>
+                      <Input
+                        id="auth-password"
+                        type="password"
+                        value={initFlow.authPassword}
+                        onChange={event => initFlow.setAuthPassword(event.target.value)}
+                        placeholder={t("init.step2.password_placeholder")}
+                      />
                     </div>
                   </>
-                ) : (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {t("init.step2.hint")}
-                  </p>
-                )}
+                ) : null}
 
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {authSession
-                    ? `${t("init.step2.authenticated")}${authIdentity ? `：${authIdentity}` : ""}`
-                    : t("init.step2.unauthenticated")}
-                </p>
+                {initFlow.authIdentity ? (
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    {t("init.step2.authenticated_as", { identity: initFlow.authIdentity })}
+                  </p>
+                ) : null}
               </CardContent>
             </Card>
 
-            <div className="flex justify-between">
-              <Button
-                variant="secondary"
-                disabled={savingConfig || loading}
-                onClick={onBackToStepOne}
-              >
-                {t("init.back")}
+            <div className="flex flex-wrap justify-between gap-2">
+              <Button variant="outline" onClick={() => initFlow.setInitStep(1)}>
+                {t("init.step2.back")}
               </Button>
-              <Button disabled={savingConfig || loading || !authSession} onClick={onInitConfig}>
-                <Save className="mr-2 h-4 w-4" />
-                {savingConfig ? t("init.submitting") : t("init.submit")}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                {!initFlow.authCodeSent ? (
+                  <Button
+                    disabled={loading || initFlow.sendingCode}
+                    onClick={() => void initFlow.handleSendLoginCode()}
+                  >
+                    {initFlow.sendingCode ? t("init.step2.sending") : t("init.step2.send_code")}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    disabled={loading || initFlow.verifyingCode}
+                    onClick={() => void initFlow.handleVerifyLogin()}
+                  >
+                    {initFlow.verifyingCode ? t("init.step2.verifying") : t("init.step2.verify")}
+                  </Button>
+                )}
+                <Button
+                  disabled={loading || initFlow.savingConfig || !initFlow.authSession}
+                  onClick={() => void initFlow.handleInitConfig()}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {initFlow.savingConfig ? t("init.step2.initializing") : t("init.step2.finish")}
+                </Button>
+              </div>
             </div>
           </>
         )}

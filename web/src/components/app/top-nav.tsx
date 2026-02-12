@@ -1,19 +1,15 @@
 import { LayoutDashboard, Settings2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { NavLink } from "react-router-dom"
-import { LanguageSwitcher } from "@/components/app/language-switcher"
-import { ThemeSwitcher } from "@/components/app/theme-switcher"
+import { useAppRoute, useAppTheme } from "@/context/app-context"
 import { cn } from "@/lib/utils"
-import type { ThemeMode } from "@/types/app"
+import { LanguageSwitcher } from "./language-switcher"
+import { ThemeSwitcher } from "./theme-switcher"
 
-interface TopNavProps {
-  isPublicRoute: boolean
-  themeMode: ThemeMode
-  setThemeMode: (mode: ThemeMode) => void
-}
-
-export function TopNav({ isPublicRoute, themeMode, setThemeMode }: TopNavProps) {
+export function TopNav() {
   const { t } = useTranslation()
+  const { isPublicRoute } = useAppRoute()
+  const { setThemeMode, themeMode } = useAppTheme()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

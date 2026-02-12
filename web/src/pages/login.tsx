@@ -4,25 +4,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAppAuth, useAppUi } from "@/context/app-context"
 
-interface LoginPageProps {
-  loading: boolean
-  username: string
-  password: string
-  onUsernameChange: (value: string) => void
-  onPasswordChange: (value: string) => void
-  onLogin: () => void
-}
-
-export function LoginPage({
-  loading,
-  username,
-  password,
-  onUsernameChange,
-  onPasswordChange,
-  onLogin,
-}: LoginPageProps) {
+export function LoginPage() {
   const { t } = useTranslation()
+  const {
+    handleWebLogin,
+    loggingIn,
+    loginPassword,
+    loginUsername,
+    setLoginPassword,
+    setLoginUsername,
+  } = useAppAuth()
+  const { loading } = useAppUi()
 
   return (
     <Card className="mx-auto w-full max-w-md overflow-hidden border-border/60 bg-card/60 shadow-md backdrop-blur-md transition-all">
@@ -38,8 +32,8 @@ export function LoginPage({
           <Label htmlFor="web-login-username">{t("login.username")}</Label>
           <Input
             id="web-login-username"
-            value={username}
-            onChange={event => onUsernameChange(event.target.value)}
+            value={loginUsername}
+            onChange={event => setLoginUsername(event.target.value)}
             autoComplete="username"
             placeholder={t("login.username_placeholder")}
           />
@@ -49,15 +43,19 @@ export function LoginPage({
           <Input
             id="web-login-password"
             type="password"
-            value={password}
-            onChange={event => onPasswordChange(event.target.value)}
+            value={loginPassword}
+            onChange={event => setLoginPassword(event.target.value)}
             autoComplete="current-password"
             placeholder={t("login.password_placeholder")}
           />
         </div>
-        <Button className="w-full" disabled={loading} onClick={onLogin}>
+        <Button
+          className="w-full"
+          disabled={loading || loggingIn}
+          onClick={() => void handleWebLogin()}
+        >
           <LogIn className="mr-2 h-4 w-4" />
-          {loading ? t("login.submitting") : t("login.submit")}
+          {loading || loggingIn ? t("login.submitting") : t("login.submit")}
         </Button>
       </CardContent>
     </Card>

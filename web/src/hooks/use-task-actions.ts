@@ -109,18 +109,33 @@ export function useTaskActions({
     [onNotice, t]
   )
 
-  return {
-    tasks,
-    activeTaskCount,
-    linkInput,
-    setLinkInput,
-    creatingTask,
-    cancelingTaskId,
-    loadTasks,
-    replaceTasks,
-    upsertTask,
-    removeTask,
-    handleCreateTask,
-    handleCancelTask,
-  }
+  return useMemo(
+    () => ({
+      tasks,
+      activeTaskCount,
+      linkInput,
+      setLinkInput,
+      creatingTask,
+      cancelingTaskId,
+      loadTasks,
+      replaceTasks,
+      upsertTask,
+      removeTask,
+      handleCreateTask,
+      handleCancelTask,
+    }),
+    [
+      activeTaskCount,
+      cancelingTaskId,
+      creatingTask,
+      handleCancelTask,
+      handleCreateTask,
+      linkInput,
+      loadTasks,
+      removeTask,
+      replaceTasks,
+      tasks,
+      upsertTask,
+    ]
+  )
 }
