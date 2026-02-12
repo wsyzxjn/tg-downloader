@@ -87,6 +87,7 @@
 - 前端:
   - 路由使用 `react-router-dom`，当前页面为 `/init`、`/login`、`/tasks`、`/settings`。
   - 组件负责展示，复杂状态与副作用优先放在 hooks。
+  - 交互规范：可点击按钮需显示手型指针（`cursor-pointer`），禁用态需显示不可点击光标（`disabled:cursor-not-allowed`）；优先在 `web/src/components/ui/button.tsx` 统一维护。
   - 提交前至少通过 `pnpm -C web run lint` 与 `pnpm -C web run build`。
 
 ## 变更建议
