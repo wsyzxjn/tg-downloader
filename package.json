@@ -4,7 +4,7 @@
   "description": "Telegram media downloader with bot and web console",
   "author": "amatsuka <amatsukamao@qq.com>",
   "license": "MIT",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "exports": {
     ".": {
       "import": "./dist/index.js",
