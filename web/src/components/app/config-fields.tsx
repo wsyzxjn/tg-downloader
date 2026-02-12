@@ -72,6 +72,7 @@ export function ConfigFields() {
         </Label>
         <Input
           id="api-hash"
+          type="password"
           value={form.apiHash}
           onChange={event =>
             setForm(prev => ({

@@ -98,6 +98,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     navigateTo,
     onNotice: setNotice,
   })
+  const { setConfigured } = initFlow
 
   const taskActions = useTaskActions({
     configured: initFlow.configured,
@@ -112,11 +113,11 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   const loadAuthStatus = useCallback(async () => {
     const status = await fetchWebAuthStatus()
-    initFlow.setConfigured(status.configured)
+    setConfigured(status.configured)
     setAuthConfigured(status.authConfigured)
     setAuthenticated(status.authenticated)
     return status
-  }, [initFlow])
+  }, [setConfigured])
 
   const handleWebLogin = useCallback(async () => {
     const username = loginUsername.trim()
