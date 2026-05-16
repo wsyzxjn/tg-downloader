@@ -1,24 +1,30 @@
-import { Navigate, Route, Routes } from "react-router-dom"
-import { PageHeader } from "@/components/app/page-header"
-import { TopNav } from "@/components/app/top-nav"
-import { AppProvider, useAppAuth, useAppFlow, useAppRoute, useAppUi } from "@/context/app-context"
-import { InitPage } from "@/pages/init"
-import { LoginPage } from "@/pages/login"
-import { SettingsPage } from "@/pages/settings"
-import { TasksPage } from "@/pages/tasks"
-import { MessageDialog } from "./components/ui/message-dialog"
+import { Navigate, Route, Routes, useLocation } from "react-router-dom"
+import { AppLifecycle } from "@/components/app/AppLifecycle"
+import { PageHeader } from "@/components/app/PageHeader"
+import { TopNav } from "@/components/app/TopNav"
+import { MessageDialog } from "@/components/ui/MessageDialog"
+import { InitPage } from "@/pages/InitPage"
+import { LoginPage } from "@/pages/LoginPage"
+import { SettingsPage } from "@/pages/SettingsPage"
+import { TasksPage } from "@/pages/TasksPage"
+import { useAuthStore } from "@/store/authStore"
+import { useUiStore } from "@/store/uiStore"
+import { getFallbackRoute, isPublicRoute } from "@/utils/routes"
 
 function AppRoutes() {
-  const { authConfigured, authenticated } = useAppAuth()
-  const { initFlow } = useAppFlow()
-  const { isPublicRoute } = useAppRoute()
-  const { clearNotice, notice } = useAppUi()
+  const pathname = useLocation().pathname
+  const authConfigured = useAuthStore(state => state.authConfigured)
+  const authenticated = useAuthStore(state => state.authenticated)
+  const configured = useAuthStore(state => state.configured)
+  const notice = useUiStore(state => state.notice)
+  const clearNotice = useUiStore(state => state.clearNotice)
 
   return (
-    <div className="min-h-screen scrollbar-gutter-stable bg-[radial-gradient(circle_at_8%_10%,#f4f4f4_0%,#efefef_42%,#e8e8e8_100%)] text-foreground dark:bg-[radial-gradient(circle_at_8%_10%,#242424_0%,#1e1e1e_45%,#161616_100%)]">
+    <div className="min-h-screen scrollbar-gutter-stable bg-background text-foreground">
+      <AppLifecycle />
       <TopNav />
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
-        {!isPublicRoute ? <PageHeader /> : null}
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6">
+        {!isPublicRoute(pathname) ? <PageHeader /> : null}
 
         <MessageDialog open={Boolean(notice)} message={notice} onClose={clearNotice} />
 
@@ -31,28 +37,15 @@ function AppRoutes() {
           <Route
             path="*"
             element={
-              <Navigate
-                to={
-                  initFlow.configured
-                    ? authConfigured && !authenticated
-                      ? "/login"
-                      : "/tasks"
-                    : "/init"
-                }
-                replace
-              />
+              <Navigate to={getFallbackRoute(configured, authConfigured, authenticated)} replace />
             }
           />
         </Routes>
-      </div>
+      </main>
     </div>
   )
 }
 
-export default function App() {
-  return (
-    <AppProvider>
-      <AppRoutes />
-    </AppProvider>
-  )
+export function App() {
+  return <AppRoutes />
 }
