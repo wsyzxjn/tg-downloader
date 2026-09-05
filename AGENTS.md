@@ -10,7 +10,7 @@
 - `src/`: 后端与 Bot 主体
 - `src/api/`: Hono API（配置、任务、Web 登录认证、Telegram 登录、SSE）
 - `src/bot/`: Bot 启动与装配（生命周期、命令/回调注册、语言）
-- `src/services/`: 核心业务（配置缓存、配置写入管理、任务队列、下载、来源解析、Bot 任务进度、Web 认证、Telegram 认证）
+- `src/services/`: 核心业务（配置缓存、配置写入管理、任务队列、TDL 进程管理与下载、来源解析、Bot 任务进度、Web 认证、Telegram 认证）
 - `src/middlewares/`: Bot 中间件（鉴权、附件下载、链接下载）
 - `web/`: React + Vite 前端控制台
 - `web/src/pages/`: 路由页面（`/init`、`/login`、`/tasks`、`/settings`）
@@ -19,9 +19,15 @@
 
 ## 关键行为约定
 - 下载能力:
-  - 支持单消息文件下载。
-  - 支持媒体组（album）一次下载全部可下载文件（按 `groupedId` 聚合）。
+  - 下载方案采用 `tdl` (https://github.com/iyear/tdl)，由 `src/services/tdl-service.ts` 驱动，不再使用自研分块下载逻辑。
+  - 支持单消息文件下载与频道/群组消息链接下载。
+  - 支持媒体组（album）一次下载全部可下载文件（按 `--group` 参数自动聚合）。
   - 下载前按 `setting.mediaTypes` 过滤可下载媒体类型。
+  - 任务取消时通过 `AbortController` 即时杀死 `tdl` 子进程并清理临时分片。
+  - 免落盘转存 OpenList:
+    - 支持直接通过流式管道（Stream Relay）免落盘直传 OpenList (`https://fox.oplist.org/`)。
+    - 底层由 `src/services/tdl-stream-server.ts` 启动临时免落盘 HTTP 流服务，由 `src/services/stream-relay-service.ts` 直接 Pipe 至 OpenList `PUT /api/fs/put`。
+    - 全链路零本地磁盘落盘，内存占用可控（流式背压），且支持 `As-Task` 后台异步转存模式与实时速率统计。
 - 任务模型:
   - 单任务可包含多文件结果。
   - `result.filePath/fileName` 保持兼容（首文件/摘要）。

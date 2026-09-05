@@ -8,6 +8,7 @@ import {
   reloadSetting,
   type Setting,
 } from "@/services/config-service.js";
+import { OpenListClient } from "@/services/openlist-service.js";
 import {
   type InitSettingInput,
   initSetting,
@@ -21,6 +22,7 @@ import {
   listTasks,
   subscribeTaskEvents,
 } from "@/services/task-service.js";
+import { getTdlStatus } from "@/services/tdl-service.js";
 import {
   sendTelegramLoginCode,
   testTelegramProxyConnection,
@@ -72,6 +74,7 @@ app.use("*", cors());
 
 const PUBLIC_API_PATHS = new Set([
   "/api/health",
+  "/api/tdl/status",
   "/api/config/status",
   "/api/config/init",
   "/api/auth/web/status",
@@ -136,6 +139,40 @@ app.get("/api/health", c => {
     status: "ok",
     timestamp: new Date().toISOString(),
   });
+});
+
+app.get("/api/tdl/status", async c => {
+  const status = await getTdlStatus();
+  return c.json(status);
+});
+
+app.post("/api/openlist/test", async c => {
+  try {
+    const payload = await c.req.json<{
+      baseUrl: string;
+      username: string;
+      password: string;
+    }>();
+
+    if (!payload.baseUrl || !payload.username || !payload.password) {
+      return c.json(
+        { ok: false, message: "服务地址、用户名与密码均不可为空" },
+        400
+      );
+    }
+
+    const client = new OpenListClient(payload);
+    const result = await client.testConnection();
+    return c.json(result);
+  } catch (error) {
+    return c.json(
+      {
+        ok: false,
+        message: error instanceof Error ? error.message : String(error),
+      },
+      500
+    );
+  }
 });
 
 app.get("/api/config", c => {

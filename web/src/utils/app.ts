@@ -3,17 +3,18 @@ import type { Setting, SettingForm, TaskStatus } from "@/types/app"
 
 export function statusTone(
   status: TaskStatus
-): "default" | "secondary" | "destructive" | "outline" {
-  if (status === "completed") return "default"
-  if (status === "failed") return "outline"
+): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" {
+  if (status === "completed") return "success"
+  if (status === "failed") return "destructive"
   if (status === "canceled") return "outline"
-  if (status === "running") return "secondary"
+  if (status === "running") return "info"
+  if (status === "pending") return "warning"
   return "outline"
 }
 
 export function statusLabel(status: TaskStatus): string {
   if (status === "pending") return "排队中"
-  if (status === "running") return "进行中"
+  if (status === "running") return "下载中"
   if (status === "completed") return "已完成"
   if (status === "canceled") return "已取消"
   return "失败"
@@ -61,6 +62,17 @@ export function toForm(setting: Setting): SettingForm {
     proxyPort,
     proxyUsername,
     proxyPassword,
+    tdlPath: setting.tdlPath || "",
+    tdlNamespace: setting.tdlNamespace || "default",
+    tdlStorage: setting.tdlStorage || "",
+    tdlThreads: String(setting.tdlThreads ?? 4),
+    storageTarget: setting.storageTarget || "local",
+    openListEnabled: Boolean(setting.openListEnabled),
+    openListBaseUrl: setting.openListBaseUrl || "",
+    openListUsername: setting.openListUsername || "",
+    openListPassword: setting.openListPassword || "",
+    openListTargetDir: setting.openListTargetDir || "/Telegram",
+    openListAsTask: Boolean(setting.openListAsTask),
   }
 }
 
@@ -162,6 +174,18 @@ export function validateStepOne(
     }
   }
 
+  if (form.openListEnabled) {
+    if (!form.openListBaseUrl.trim()) {
+      issues.push(t("validation.openlist_base_url_required", "启用 OpenList 时必须填写服务地址"))
+    }
+    if (!form.openListUsername.trim()) {
+      issues.push(t("validation.openlist_username_required", "启用 OpenList 时必须填写用户名"))
+    }
+    if (!form.openListPassword.trim()) {
+      issues.push(t("validation.openlist_password_required", "启用 OpenList 时必须填写密码"))
+    }
+  }
+
   const rawIds = allowedUserIdsInput.trim()
   if (rawIds) {
     const hasInvalid = rawIds
@@ -204,6 +228,11 @@ export function normalizeSettingPayload(
   const botToken = form.botToken.trim()
   const proxy = buildProxyUrl(form)
 
+  const tdlThreads = form.tdlThreads ? Number(form.tdlThreads) : undefined
+  if (tdlThreads !== undefined && (Number.isNaN(tdlThreads) || tdlThreads < 1 || tdlThreads > 32)) {
+    throw new Error("单任务线程数必须在 1 到 32 之间")
+  }
+
   return {
     ...(botToken ? { botToken } : {}),
     apiId,
@@ -215,6 +244,17 @@ export function normalizeSettingPayload(
     allowedUserIds: parseCsvNumbers(allowedUserIdsInput, t),
     mediaTypes,
     proxy,
+    tdlPath: form.tdlPath.trim() || undefined,
+    tdlNamespace: form.tdlNamespace.trim() || undefined,
+    tdlStorage: form.tdlStorage.trim() || undefined,
+    tdlThreads,
+    storageTarget: form.storageTarget || "local",
+    openListEnabled: Boolean(form.openListEnabled),
+    openListBaseUrl: form.openListBaseUrl.trim() || undefined,
+    openListUsername: form.openListUsername.trim() || undefined,
+    openListPassword: form.openListPassword.trim() || undefined,
+    openListTargetDir: form.openListTargetDir.trim() || undefined,
+    openListAsTask: Boolean(form.openListAsTask),
   }
 }
 

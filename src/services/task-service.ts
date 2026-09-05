@@ -25,6 +25,7 @@ export interface TaskResult {
   filePaths?: string[];
   fileNames?: string[];
   error?: string;
+  destination?: "local" | "openlist";
 }
 
 interface TaskMeta {
@@ -74,6 +75,7 @@ const taskEventListeners = new Set<(event: TaskEvent) => void>();
 const TASK_TTL_MS = 1000 * 60 * 60 * 24;
 const MAX_CONCURRENT_RUNNING_TASKS = 3;
 const runningTaskIds = new Set<string>();
+const activeTaskAbortControllers = new Map<string, AbortController>();
 const logger = createLogger("task-service");
 
 function normalizeTaskErrorMessage(error: unknown): string {
@@ -359,6 +361,11 @@ export function cancelTask(taskId: string, reason = "任务已取消"): TaskReco
 
   const fromStatus = task.status;
   logTaskDebug(taskId, "cancel accepted", { fromStatus });
+  const abortController = activeTaskAbortControllers.get(taskId);
+  if (abortController) {
+    abortController.abort();
+    activeTaskAbortControllers.delete(taskId);
+  }
   task.status = "canceled";
   task.updatedAt = new Date().toISOString();
   task.result = {
@@ -448,6 +455,9 @@ async function runTask(taskId: string) {
     return;
   }
 
+  const abortController = new AbortController();
+  activeTaskAbortControllers.set(taskId, abortController);
+
   task.status = "running";
   logTaskDebug(taskId, "status -> running");
   task.updatedAt = new Date().toISOString();
@@ -479,6 +489,7 @@ async function runTask(taskId: string) {
             {
               allowedMediaTypes: setting.mediaTypes,
               albumConcurrency: setting.downloadFileConcurrency,
+              signal: abortController.signal,
               onProgress: progressHandler,
             }
           )
@@ -488,6 +499,7 @@ async function runTask(taskId: string) {
             setting.downloadDir,
             {
               albumConcurrency: setting.downloadFileConcurrency,
+              signal: abortController.signal,
               onProgress: progressHandler,
             }
           );
@@ -513,6 +525,7 @@ async function runTask(taskId: string) {
       percent: 100,
     };
     currentTask.result = {
+      destination: downloadResult.destination,
       filePath: downloadResult.filePaths[0],
       fileName:
         downloadResult.fileInfos.length === 1
@@ -554,6 +567,7 @@ async function runTask(taskId: string) {
     currentTask.expiresAt = getExpiresAt();
     emitTaskUpsert(currentTask);
   } finally {
+    activeTaskAbortControllers.delete(taskId);
     taskPayloads.delete(taskId);
   }
 }

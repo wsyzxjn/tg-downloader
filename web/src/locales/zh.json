@@ -1,7 +1,7 @@
 {
   "title": "TG Downloader",
   "nav": {
-    "tasks": "任务列表",
+    "tasks": "任务管理",
     "settings": "系统设置"
   },
   "theme": {
@@ -22,7 +22,9 @@
       "link_placeholder": "https://t.me/channel/123",
       "hint": "仅支持纯链接文本。任务创建后会在下方自动更新进度。",
       "button": "创建下载任务",
-      "creating": "创建中..."
+      "creating": "创建中...",
+      "examples_title": "示例格式：",
+      "clear": "清空输入"
     },
     "list": {
       "title": "任务列表",
@@ -50,13 +52,27 @@
     },
     "actions": {
       "cancel": "取消",
-      "canceling": "取消中..."
+      "canceling": "取消中...",
+      "copy_id": "复制任务 ID",
+      "copied": "已复制到剪贴板",
+      "copy_result": "复制结果路径"
     },
     "type": {
       "user": "用户",
       "channel": "频道",
       "chat": "聊天",
       "bot": "Bot"
+    },
+    "filter": {
+      "all": "全部任务",
+      "running": "进行中",
+      "pending": "等待中",
+      "completed": "已完成",
+      "failed": "失败/取消"
+    },
+    "destination": {
+      "openlist": "OpenList 网盘",
+      "local": "本地文件"
     }
   },
   "settings": {
@@ -113,7 +129,43 @@
       "video_note": "视频笔记 (Video Note)",
       "voice": "语音 (Voice)",
       "sticker": "贴纸 (Sticker)"
-    }
+    },
+    "tdl_title": "TDL 下载引擎",
+    "tdl_status": "引擎状态",
+    "tdl_check": "检查状态",
+    "tdl_checking": "检测中...",
+    "tdl_installed": "已就绪",
+    "tdl_not_installed": "未检测到可执行程序",
+    "tdl_authorized": "已授权登录",
+    "tdl_not_authorized": "未登录",
+    "tdl_path": "TDL 程序路径",
+    "tdl_path_placeholder": "留空默认自动检测",
+    "tdl_namespace": "TDL 命名空间",
+    "tdl_threads": "单文件下载线程数",
+    "tdl_threads_placeholder": "1 - 32，默认 4",
+    "tdl_hint": "TDL 是基于 Go 开发的 Telegram 高速下载引擎。如显示未登录，可在服务器终端执行 `tdl login`（支持 Telegram Desktop 导入或二维码扫码）完成授权。",
+    "section_tdl": "TDL 引擎与下载设置",
+    "section_tg": "Telegram API 与机器人配置",
+    "section_network": "网络与代理配置",
+    "section_media": "媒体类型与权限",
+    "section_openlist": "OpenList 存储网盘转存（免落盘）",
+    "openlist_enabled": "启用 OpenList 转存",
+    "openlist_desc": "开启后可将 Telegram 媒体文件直接流式上传至 OpenList 挂载的网盘（如 115、阿里云盘、夸克、S3 等），完全不占用本地磁盘空间。",
+    "storage_target": "转存存储模式",
+    "storage_target_local": "仅保存到本地磁盘",
+    "storage_target_openlist": "免落盘直传 OpenList",
+    "openlist_base_url": "OpenList 服务地址",
+    "openlist_base_url_placeholder": "https://pan.example.com",
+    "openlist_username": "OpenList 用户名",
+    "openlist_username_placeholder": "admin",
+    "openlist_password": "OpenList 密码",
+    "openlist_password_placeholder": "请输入密码",
+    "openlist_target_dir": "转存目标路径",
+    "openlist_target_dir_placeholder": "/Telegram",
+    "openlist_as_task": "使用 OpenList 后台任务异步处理 (As-Task)",
+    "openlist_as_task_hint": "推荐大文件开启，可避免超长 HTTP 请求被网关反向代理超时中断。",
+    "test_openlist": "测试 OpenList 连接",
+    "testing_openlist": "测试中..."
   },
   "modal": {
     "title": "提示",
@@ -146,7 +198,9 @@
     "proxy_test_success": "代理连接测试成功",
     "proxy_test_failed": "代理连接测试失败",
     "enter_web_credentials": "请输入账号和密码",
-    "web_login_failed": "Web 登录失败"
+    "web_login_failed": "Web 登录失败",
+    "openlist_test_success": "OpenList 连接成功！已验证用户：{{user}}",
+    "openlist_test_failed": "OpenList 连接测试失败"
   },
   "validation": {
     "web_username_required": "Web 登录账号未填写",

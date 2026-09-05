@@ -168,6 +168,30 @@ function validateSettingShape(setting: Partial<SettingBaseInput>) {
   if (!Array.isArray(setting.mediaTypes)) {
     throw new Error("mediaTypes 必填且必须是字符串数组");
   }
+  if (setting.tdlPath !== undefined && typeof setting.tdlPath !== "string") {
+    throw new Error("tdlPath 必须是字符串");
+  }
+  if (
+    setting.tdlNamespace !== undefined &&
+    typeof setting.tdlNamespace !== "string"
+  ) {
+    throw new Error("tdlNamespace 必须是字符串");
+  }
+  if (
+    setting.tdlStorage !== undefined &&
+    typeof setting.tdlStorage !== "string"
+  ) {
+    throw new Error("tdlStorage 必须是字符串");
+  }
+  if (
+    setting.tdlThreads !== undefined &&
+    (typeof setting.tdlThreads !== "number" ||
+      !Number.isInteger(setting.tdlThreads) ||
+      setting.tdlThreads < 1 ||
+      setting.tdlThreads > 32)
+  ) {
+    throw new Error("tdlThreads 必须是 1 到 32 之间的整数");
+  }
 }
 
 function validateWebAuthInput(username: string, password: string) {
@@ -227,6 +251,17 @@ export function updateSetting(patch: UpdateSettingInput) {
       throw new Error("logLevel 必须是 debug/info/warn/error 之一");
     }
   }
+  if (patch.tdlThreads !== undefined) {
+    if (
+      typeof patch.tdlThreads !== "number" ||
+      !Number.isInteger(patch.tdlThreads) ||
+      patch.tdlThreads < 1 ||
+      patch.tdlThreads > 32
+    ) {
+      throw new Error("tdlThreads 必须是 1 到 32 之间的整数");
+    }
+  }
+
   if (patch.downloadFileConcurrency !== undefined) {
     if (
       typeof patch.downloadFileConcurrency !== "number" ||
@@ -255,12 +290,40 @@ export function updateSetting(patch: UpdateSettingInput) {
     "downloadDir",
     "proxy",
     "webUsername",
+    "tdlPath",
+    "tdlNamespace",
+    "tdlStorage",
+    "storageTarget",
+    "openListBaseUrl",
+    "openListUsername",
+    "openListPassword",
+    "openListTargetDir",
   ] as const;
   for (const field of stringFields) {
     const value = restPatch[field];
     if (value !== undefined && typeof value !== "string") {
       throw new Error(`${field} 必须是字符串`);
     }
+  }
+
+  if (
+    restPatch.openListEnabled !== undefined &&
+    typeof restPatch.openListEnabled !== "boolean"
+  ) {
+    throw new Error("openListEnabled 必须是布尔值");
+  }
+  if (
+    restPatch.openListAsTask !== undefined &&
+    typeof restPatch.openListAsTask !== "boolean"
+  ) {
+    throw new Error("openListAsTask 必须是布尔值");
+  }
+  if (
+    restPatch.storageTarget !== undefined &&
+    restPatch.storageTarget !== "local" &&
+    restPatch.storageTarget !== "openlist"
+  ) {
+    throw new Error("storageTarget 必须是 local 或 openlist");
   }
 
   const nextSetting: Setting = {

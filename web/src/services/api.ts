@@ -188,3 +188,23 @@ export async function cancelTask(taskId: string): Promise<void> {
   })
   await readDataOrThrow<unknown>(response, "取消任务失败")
 }
+
+export async function fetchTdlStatus(): Promise<import("@/types/app").TdlStatusResponse> {
+  const response = await fetch("/api/tdl/status")
+  return (await parseApiJson(response)) as unknown as import("@/types/app").TdlStatusResponse
+}
+
+export async function testOpenList(payload: {
+  baseUrl: string
+  username: string
+  password: string
+}): Promise<import("@/types/app").OpenListTestResponse> {
+  const response = await fetch("/api/openlist/test", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+  return (await parseApiJson(response)) as unknown as import("@/types/app").OpenListTestResponse
+}

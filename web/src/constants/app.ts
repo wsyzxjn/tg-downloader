@@ -25,6 +25,17 @@ export const DEFAULT_SETTING_FORM: SettingForm = {
   proxyPort: "",
   proxyUsername: "",
   proxyPassword: "",
+  tdlPath: "",
+  tdlNamespace: "default",
+  tdlStorage: "",
+  tdlThreads: "4",
+  storageTarget: "local",
+  openListEnabled: false,
+  openListBaseUrl: "",
+  openListUsername: "",
+  openListPassword: "",
+  openListTargetDir: "/Telegram",
+  openListAsTask: false,
 }
 
 export const DEFAULT_MEDIA_TYPES = [...MEDIA_TYPE_OPTIONS]

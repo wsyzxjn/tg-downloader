@@ -5,6 +5,7 @@ import type { MEDIA_TYPES } from "@/constants/media-types.js";
  */
 export type MediaType = (typeof MEDIA_TYPES)[number];
 export type LogLevel = "debug" | "info" | "warn" | "error";
+export type StorageTarget = "local" | "openlist";
 
 export interface Setting {
   // web auth
@@ -25,4 +26,17 @@ export interface Setting {
   mediaTypes: MediaType[];
   // net
   proxy?: string;
+  // tdl downloader integration
+  tdlPath?: string;
+  tdlNamespace?: string;
+  tdlStorage?: string;
+  tdlThreads?: number;
+  // openlist integration
+  storageTarget?: StorageTarget;
+  openListEnabled?: boolean;
+  openListBaseUrl?: string;
+  openListUsername?: string;
+  openListPassword?: string;
+  openListTargetDir?: string;
+  openListAsTask?: boolean;
 }

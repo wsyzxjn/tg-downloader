@@ -22,7 +22,9 @@
       "link_placeholder": "https://t.me/channel/123",
       "hint": "Only plain links are supported. Progress updates below.",
       "button": "Create Download Task",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "examples_title": "Examples:",
+      "clear": "Clear"
     },
     "list": {
       "title": "Task List",
@@ -50,13 +52,27 @@
     },
     "actions": {
       "cancel": "Cancel",
-      "canceling": "Canceling..."
+      "canceling": "Canceling...",
+      "copy_id": "Copy Task ID",
+      "copied": "Copied to clipboard",
+      "copy_result": "Copy Path"
     },
     "type": {
       "user": "User",
       "channel": "Channel",
       "chat": "Chat",
       "bot": "Bot"
+    },
+    "filter": {
+      "all": "All",
+      "running": "Running",
+      "pending": "Pending",
+      "completed": "Completed",
+      "failed": "Failed/Canceled"
+    },
+    "destination": {
+      "openlist": "OpenList Cloud",
+      "local": "Local File"
     }
   },
   "settings": {
@@ -113,7 +129,43 @@
       "video_note": "Video Note",
       "voice": "Voice",
       "sticker": "Sticker"
-    }
+    },
+    "tdl_title": "TDL Downloader Engine",
+    "tdl_status": "Engine Status",
+    "tdl_check": "Check Status",
+    "tdl_checking": "Checking...",
+    "tdl_installed": "Ready",
+    "tdl_not_installed": "Not Found",
+    "tdl_authorized": "Authorized",
+    "tdl_not_authorized": "Not Authorized",
+    "tdl_path": "TDL Binary Path",
+    "tdl_path_placeholder": "Leave empty for auto-detection",
+    "tdl_namespace": "TDL Namespace",
+    "tdl_threads": "Threads per Task",
+    "tdl_threads_placeholder": "1 - 32, default 4",
+    "tdl_hint": "TDL is a high-speed Go-based Telegram downloader. If not authorized, run `tdl login` in your terminal to authenticate via Telegram Desktop or QR code.",
+    "section_tdl": "TDL Engine & Download Settings",
+    "section_tg": "Telegram API & Bot Configuration",
+    "section_network": "Network & Proxy Settings",
+    "section_media": "Media Types & Permissions",
+    "section_openlist": "OpenList Cloud Storage (Zero-Disk)",
+    "openlist_enabled": "Enable OpenList Transfer",
+    "openlist_desc": "Stream Telegram media directly into cloud drives mounted in OpenList (115, Aliyun Drive, Quark, S3, etc.) without saving to local disk.",
+    "storage_target": "Storage Destination Mode",
+    "storage_target_local": "Save to Local Disk Only",
+    "storage_target_openlist": "Stream to OpenList (Zero-Disk)",
+    "openlist_base_url": "OpenList Server URL",
+    "openlist_base_url_placeholder": "https://pan.example.com",
+    "openlist_username": "OpenList Username",
+    "openlist_username_placeholder": "admin",
+    "openlist_password": "OpenList Password",
+    "openlist_password_placeholder": "Enter password",
+    "openlist_target_dir": "Destination Path in OpenList",
+    "openlist_target_dir_placeholder": "/Telegram",
+    "openlist_as_task": "Upload via OpenList Background Task (As-Task)",
+    "openlist_as_task_hint": "Recommended for large files to prevent gateway HTTP timeouts.",
+    "test_openlist": "Test OpenList Connection",
+    "testing_openlist": "Testing..."
   },
   "modal": {
     "title": "Notice",
@@ -146,7 +198,9 @@
     "proxy_test_success": "Proxy connection test passed",
     "proxy_test_failed": "Proxy connection test failed",
     "enter_web_credentials": "Please enter username and password",
-    "web_login_failed": "Web login failed"
+    "web_login_failed": "Web login failed",
+    "openlist_test_success": "Connected to OpenList! Verified user: {{user}}",
+    "openlist_test_failed": "OpenList connection test failed"
   },
   "validation": {
     "web_username_required": "Web login username is required",

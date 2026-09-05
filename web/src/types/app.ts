@@ -1,6 +1,7 @@
 export type TaskStatus = "pending" | "running" | "completed" | "failed" | "canceled"
 export type ThemeMode = "system" | "light" | "dark"
 export type LogLevel = "debug" | "info" | "warn" | "error"
+export type StorageTarget = "local" | "openlist"
 
 export interface Setting {
   webUsername?: string
@@ -14,6 +15,17 @@ export interface Setting {
   allowedUserIds: number[]
   mediaTypes: string[]
   proxy?: string
+  tdlPath?: string
+  tdlNamespace?: string
+  tdlStorage?: string
+  tdlThreads?: number
+  storageTarget?: StorageTarget
+  openListEnabled?: boolean
+  openListBaseUrl?: string
+  openListUsername?: string
+  openListPassword?: string
+  openListTargetDir?: string
+  openListAsTask?: boolean
 }
 
 export interface SettingForm {
@@ -30,6 +42,17 @@ export interface SettingForm {
   proxyPort: string
   proxyUsername: string
   proxyPassword: string
+  tdlPath: string
+  tdlNamespace: string
+  tdlStorage: string
+  tdlThreads: string
+  storageTarget: StorageTarget
+  openListEnabled: boolean
+  openListBaseUrl: string
+  openListUsername: string
+  openListPassword: string
+  openListTargetDir: string
+  openListAsTask: boolean
 }
 
 export interface TaskRecord {
@@ -45,6 +68,7 @@ export interface TaskRecord {
     speedBytesPerSec?: number
   }
   result?: {
+    destination?: "local" | "openlist"
     filePath?: string
     fileName?: string
     filePaths?: string[]
@@ -69,5 +93,20 @@ export interface TelegramAuthVerifyResponse {
   session?: string
   userId?: number
   firstName?: string
+  username?: string
+}
+
+export interface TdlStatusResponse {
+  installed: boolean
+  path?: string
+  version?: string
+  authorized: boolean
+  namespace: string
+  error?: string
+}
+
+export interface OpenListTestResponse {
+  ok: boolean
+  message: string
   username?: string
 }
