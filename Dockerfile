@@ -3,12 +3,25 @@
 # Stage 1: Builder
 FROM node:24-slim AS builder
 
+ARG TARGETARCH=amd64
+
 # Enable pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 WORKDIR /app
+
+# Download tdl binary for TARGETARCH
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl tar && \
+    ARCH="${TARGETARCH:-amd64}" && \
+    case "${ARCH}" in \
+      "amd64") TDL_ARCH="64bit" ;; \
+      "arm64") TDL_ARCH="arm64" ;; \
+      *) echo "Unsupported architecture: ${ARCH}" && exit 1 ;; \
+    esac && \
+    curl -fsSL "https://github.com/iyear/tdl/releases/download/v0.20.4/tdl_Linux_${TDL_ARCH}.tar.gz" | tar -xz -C /usr/local/bin tdl && \
+    chmod +x /usr/local/bin/tdl
 
 # Copy configuration files
 COPY package.json pnpm-lock.yaml ./
@@ -32,24 +45,13 @@ RUN pnpm prune --prod
 # Stage 2: Runner
 FROM node:24-slim AS runner
 
-ARG TARGETARCH=amd64
-
-# Install ca-certificates and tdl binary
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl tar && \
-    ARCH="${TARGETARCH:-amd64}" && \
-    case "${ARCH}" in \
-      "amd64") TDL_ARCH="64bit" ;; \
-      "arm64") TDL_ARCH="arm64" ;; \
-      *) echo "Unsupported architecture: ${ARCH}" && exit 1 ;; \
-    esac && \
-    curl -fsSL "https://github.com/iyear/tdl/releases/download/v0.20.4/tdl_Linux_${TDL_ARCH}.tar.gz" | tar -xz -C /usr/local/bin tdl && \
-    chmod +x /usr/local/bin/tdl && \
-    apt-get purge -y curl tar && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--enable-source-maps"
+
+# Copy tdl binary from builder
+COPY --from=builder /usr/local/bin/tdl /usr/local/bin/tdl
 
 # Copy built artifacts and necessary files
 COPY --from=builder /app/dist ./dist
