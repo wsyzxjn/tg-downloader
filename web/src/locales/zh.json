@@ -165,7 +165,9 @@
     "openlist_as_task": "使用 OpenList 后台任务异步处理 (As-Task)",
     "openlist_as_task_hint": "推荐大文件开启，可避免超长 HTTP 请求被网关反向代理超时中断。",
     "test_openlist": "测试 OpenList 连接",
-    "testing_openlist": "测试中..."
+    "testing_openlist": "测试中...",
+    "tdl_login_btn": "登录 TDL",
+    "tdl_login_now": "立即登录"
   },
   "modal": {
     "title": "提示",
@@ -252,10 +254,35 @@
       "verifying_code": "验证中...",
       "hint": "请先发送验证码，随后会显示登录验证输入框。",
       "authenticated": "已认证",
-      "unauthenticated": "未认证：请先完成身份验证"
+      "unauthenticated": "未认证：请先完成身份验证",
+      "qr_option": "TDL 扫码登录 (推荐)",
+      "code_option": "手机验证码登录"
     },
     "submit": "初始化配置",
     "submitting": "初始化中...",
     "back": "返回上一步"
+  },
+  "tdl_login": {
+    "title": "登录 Telegram (TDL 引擎)",
+    "tab_qr": "扫码登录 (推荐)",
+    "tab_desktop": "桌面端导入",
+    "generating_qr": "正在生成登录二维码...",
+    "qr_instruction_title": "请使用 Telegram 手机端扫码",
+    "qr_instruction_step": "设置 → 设备 → 连接桌面设备，对准上方二维码",
+    "2fa_required": "该账号已开启两步验证，请输入二次密码",
+    "2fa_password": "二次验证密码 (2FA)",
+    "2fa_placeholder": "请输入 2FA 密码",
+    "submit_password": "提交密码",
+    "success": "登录成功！",
+    "failed": "登录遇到问题",
+    "retry_qr": "重新生成二维码",
+    "desktop_hint_title": "直接导入本地 Telegram 桌面客户端会话",
+    "desktop_hint_desc": "无需手机扫码，系统将自动读取已登录客户端的 tdata 会话并授权至 TDL。",
+    "desktop_path": "客户端数据路径 (可选)",
+    "desktop_path_placeholder": "留空将自动检索系统默认路径",
+    "desktop_passcode": "本地锁屏密码 (可选)",
+    "desktop_passcode_placeholder": "若客户端设置了本地密码则填写",
+    "importing": "正在导入会话...",
+    "import_btn": "一键导入会话"
   }
 }

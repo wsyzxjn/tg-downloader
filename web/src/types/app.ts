@@ -110,3 +110,22 @@ export interface OpenListTestResponse {
   message: string
   username?: string
 }
+
+export type TdlQrLoginStatus =
+  | "idle"
+  | "starting"
+  | "qr_ready"
+  | "waiting_password"
+  | "success"
+  | "failed"
+  | "canceled"
+
+export interface TdlQrLoginResponse {
+  status: TdlQrLoginStatus
+  qrSvg?: string
+  error?: string
+  user?: {
+    id?: number
+    username?: string
+  }
+}

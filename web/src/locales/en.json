@@ -165,7 +165,9 @@
     "openlist_as_task": "Upload via OpenList Background Task (As-Task)",
     "openlist_as_task_hint": "Recommended for large files to prevent gateway HTTP timeouts.",
     "test_openlist": "Test OpenList Connection",
-    "testing_openlist": "Testing..."
+    "testing_openlist": "Testing...",
+    "tdl_login_btn": "Login TDL",
+    "tdl_login_now": "Login Now"
   },
   "modal": {
     "title": "Notice",
@@ -252,10 +254,35 @@
       "verifying_code": "Verifying...",
       "hint": "Please send verification code first.",
       "authenticated": "Authenticated",
-      "unauthenticated": "Unauthenticated: Please complete verification"
+      "unauthenticated": "Unauthenticated: Please complete verification",
+      "qr_option": "TDL QR Login (Recommended)",
+      "code_option": "Phone Code Login"
     },
     "submit": "Initialize Config",
     "submitting": "Initializing...",
     "back": "Back"
+  },
+  "tdl_login": {
+    "title": "Login to Telegram (TDL Engine)",
+    "tab_qr": "QR Code (Recommended)",
+    "tab_desktop": "Desktop Import",
+    "generating_qr": "Generating QR code...",
+    "qr_instruction_title": "Scan with Telegram mobile app",
+    "qr_instruction_step": "Settings → Devices → Link Desktop Device, then point at this QR code",
+    "2fa_required": "Two-step verification enabled, please enter 2FA password",
+    "2fa_password": "2FA Password",
+    "2fa_placeholder": "Enter 2FA password",
+    "submit_password": "Submit Password",
+    "success": "Login Successful!",
+    "failed": "Login Error",
+    "retry_qr": "Regenerate QR Code",
+    "desktop_hint_title": "Import from Telegram Desktop session",
+    "desktop_hint_desc": "No QR code required. Reads existing tdata session from Telegram Desktop.",
+    "desktop_path": "Data Path (Optional)",
+    "desktop_path_placeholder": "Leave empty to auto-detect",
+    "desktop_passcode": "Local Passcode (Optional)",
+    "desktop_passcode_placeholder": "Enter if local passcode is set",
+    "importing": "Importing session...",
+    "import_btn": "Import Session"
   }
 }

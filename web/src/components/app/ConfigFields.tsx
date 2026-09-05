@@ -10,6 +10,8 @@ import {
   Key,
   Layers,
   Loader2,
+  LogIn,
+  QrCode,
   RefreshCw,
   Sliders,
   Terminal,
@@ -17,6 +19,7 @@ import {
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useShallow } from "zustand/react/shallow"
+import { TdlLoginDialog } from "@/components/app/TdlLoginDialog"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
@@ -57,6 +60,7 @@ export function ConfigFields() {
 
   const [tdlStatus, setTdlStatus] = useState<TdlStatusResponse | null>(null)
   const [checkingTdl, setCheckingTdl] = useState(false)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
 
   const [testingOpenList, setTestingOpenList] = useState(false)
   const [openListTestResult, setOpenListTestResult] = useState<OpenListTestResponse | null>(null)
@@ -155,6 +159,17 @@ export function ConfigFields() {
                 </Badge>
               )
             ) : null}
+            {tdlStatus && !tdlStatus.authorized ? (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setShowLoginDialog(true)}
+                className="h-7 px-2.5 text-xs font-semibold"
+              >
+                <LogIn className="h-3 w-3 mr-1" />
+                <span>{t("config.tdl_login_btn", "登录 TDL")}</span>
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="outline"
@@ -179,14 +194,27 @@ export function ConfigFields() {
         </div>
 
         {tdlStatus && !tdlStatus.authorized ? (
-          <div className="flex items-start gap-2.5 rounded-md bg-amber-500/10 border border-amber-500/20 p-3 text-xs text-amber-700 dark:text-amber-300">
-            <Terminal className="h-4 w-4 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="font-medium">
-                {t("config.tdl_not_authorized", "TDL 当前尚未登录 Telegram 账号")}
-              </p>
-              <p className="text-[11px] opacity-90">{t("config.tdl_hint")}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-md bg-amber-500/10 border border-amber-500/20 p-3.5 text-xs text-amber-700 dark:text-amber-300">
+            <div className="flex items-start gap-2.5">
+              <Terminal className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">
+                  {t("config.tdl_not_authorized", "TDL 当前尚未登录 Telegram 账号")}
+                </p>
+                <p className="text-[11px] opacity-90 text-muted-foreground">
+                  {t("config.tdl_hint")}
+                </p>
+              </div>
             </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setShowLoginDialog(true)}
+              className="shrink-0 h-8 px-3.5 text-xs font-semibold"
+            >
+              <QrCode className="h-3.5 w-3.5 mr-1.5" />
+              <span>{t("config.tdl_login_now", "立即登录")}</span>
+            </Button>
           </div>
         ) : null}
 
@@ -739,6 +767,17 @@ export function ConfigFields() {
           </select>
         </div>
       </div>
+
+      <TdlLoginDialog
+        open={showLoginDialog}
+        onClose={() => setShowLoginDialog(false)}
+        onSuccess={() => {
+          setCheckingTdl(true)
+          void fetchTdlStatus()
+            .then(setTdlStatus)
+            .finally(() => setCheckingTdl(false))
+        }}
+      />
     </div>
   )
 }

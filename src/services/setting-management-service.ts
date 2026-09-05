@@ -375,27 +375,27 @@ export async function initSetting(input: InitSettingInput): Promise<Setting> {
   );
   const { webPassword: _webPassword, ...setting } = input;
 
-  const normalizedSetting: Setting =
-    setting.allowedUserIds.length === 0
-      ? {
-          ...setting,
-          webUsername: credentials.webUsername,
-          webPasswordHash: credentials.webPasswordHash,
-          downloadFileConcurrency:
-            setting.downloadFileConcurrency ??
-            DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
-          logLevel: setting.logLevel ?? DEFAULT_LOG_LEVEL,
-          allowedUserIds: [await resolveSelfUserId(setting)],
-        }
-      : {
-          ...setting,
-          webUsername: credentials.webUsername,
-          webPasswordHash: credentials.webPasswordHash,
-          downloadFileConcurrency:
-            setting.downloadFileConcurrency ??
-            DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
-          logLevel: setting.logLevel ?? DEFAULT_LOG_LEVEL,
-        };
+  let initialAllowedUserIds = setting.allowedUserIds;
+  if (initialAllowedUserIds.length === 0) {
+    try {
+      const selfId = await resolveSelfUserId(setting);
+      if (selfId > 0) {
+        initialAllowedUserIds = [selfId];
+      }
+    } catch (e) {
+      logger.debug("未能自动获取用户 ID 作为 allowedUserIds", e);
+    }
+  }
+
+  const normalizedSetting: Setting = {
+    ...setting,
+    webUsername: credentials.webUsername,
+    webPasswordHash: credentials.webPasswordHash,
+    downloadFileConcurrency:
+      setting.downloadFileConcurrency ?? DEFAULT_DOWNLOAD_FILE_CONCURRENCY,
+    logLevel: setting.logLevel ?? DEFAULT_LOG_LEVEL,
+    allowedUserIds: initialAllowedUserIds,
+  };
 
   const saved = saveSetting(normalizedSetting);
   reloadSetting();

@@ -22,6 +22,13 @@ import {
   listTasks,
   subscribeTaskEvents,
 } from "@/services/task-service.js";
+import {
+  cancelTdlQrLogin,
+  getTdlQrLoginStatus,
+  importTdlDesktopSession,
+  startTdlQrLogin,
+  submitTdl2faPassword,
+} from "@/services/tdl-login-service.js";
 import { getTdlStatus } from "@/services/tdl-service.js";
 import {
   sendTelegramLoginCode,
@@ -75,6 +82,11 @@ app.use("*", cors());
 const PUBLIC_API_PATHS = new Set([
   "/api/health",
   "/api/tdl/status",
+  "/api/tdl/login/qr/start",
+  "/api/tdl/login/qr/status",
+  "/api/tdl/login/qr/password",
+  "/api/tdl/login/qr/cancel",
+  "/api/tdl/login/desktop",
   "/api/config/status",
   "/api/config/init",
   "/api/auth/web/status",
@@ -144,6 +156,55 @@ app.get("/api/health", c => {
 app.get("/api/tdl/status", async c => {
   const status = await getTdlStatus();
   return c.json(status);
+});
+
+app.post("/api/tdl/login/qr/start", async c => {
+  const session = await startTdlQrLogin();
+  return c.json(session);
+});
+
+app.get("/api/tdl/login/qr/status", c => {
+  return c.json(getTdlQrLoginStatus());
+});
+
+app.post("/api/tdl/login/qr/password", async c => {
+  try {
+    const payload = await c.req.json<{ password: string }>();
+    if (!payload.password) {
+      return c.json({ error: "请输入二次验证密码" }, 400);
+    }
+    const result = await submitTdl2faPassword(payload.password);
+    return c.json(result);
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
+});
+
+app.post("/api/tdl/login/qr/cancel", c => {
+  cancelTdlQrLogin();
+  return c.json({ ok: true });
+});
+
+app.post("/api/tdl/login/desktop", async c => {
+  try {
+    const payload = await c.req.json<{
+      desktopPath?: string;
+      passcode?: string;
+    }>();
+    const result = await importTdlDesktopSession(payload);
+    return c.json(result);
+  } catch (error) {
+    return c.json(
+      {
+        ok: false,
+        message: error instanceof Error ? error.message : String(error),
+      },
+      500
+    );
+  }
 });
 
 app.post("/api/openlist/test", async c => {

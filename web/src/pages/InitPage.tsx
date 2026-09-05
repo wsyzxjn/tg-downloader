@@ -5,17 +5,21 @@ import {
   Key,
   Lock,
   Phone,
+  QrCode,
   ShieldCheck,
   User,
 } from "lucide-react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useShallow } from "zustand/react/shallow"
 import { AppSectionCard } from "@/components/app/AppSectionCard"
 import { ConfigFields } from "@/components/app/ConfigFields"
+import { TdlLoginDialog } from "@/components/app/TdlLoginDialog"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
+import { cn } from "@/lib/utils"
 import { useConfigStore } from "@/store/configStore"
 import { useUiStore } from "@/store/uiStore"
 import { validateStepOne } from "@/utils/app"
@@ -72,6 +76,8 @@ export function InitPage() {
     }))
   )
   const bootstrapping = useUiStore(state => state.bootstrapping)
+  const [showTdlModal, setShowTdlModal] = useState(false)
+  const [authMethod, setAuthMethod] = useState<"tdl" | "sms">("tdl")
   const initStepOneIssues = validateStepOne(form, allowedUserIdsInput, mediaTypes, t)
   const canProceedInitStepOne = initStepOneIssues.length === 0
 
@@ -189,57 +195,116 @@ export function InitPage() {
         <>
           <AppSectionCard
             title={t("init.step2.title")}
-            subtitle="通过 Telegram 账号验证以获取访问权限与 Session"
+            subtitle="通过 Telegram 账号验证以获取访问权限与下载授权"
             contentClassName="space-y-5 pt-4"
           >
             <div className="max-w-md space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="auth-phone" className="text-xs font-medium text-foreground">
-                  {t("init.step2.phone_label")}
-                </Label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-                    <Phone className="h-4 w-4" />
-                  </div>
-                  <Input
-                    id="auth-phone"
-                    value={authPhoneNumber}
-                    onChange={event => setAuthPhoneNumber(event.target.value)}
-                    placeholder={t("init.step2.phone_placeholder")}
-                    className="pl-9 font-mono text-sm"
-                  />
-                </div>
+              {/* Method tabs */}
+              <div className="grid grid-cols-2 rounded-md bg-muted/50 p-1 text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("tdl")}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-sm py-1.5 transition-colors cursor-pointer",
+                    authMethod === "tdl"
+                      ? "bg-card text-foreground font-semibold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <QrCode className="h-3.5 w-3.5" />
+                  <span>{t("init.step2.qr_option", "TDL 扫码登录 (推荐)")}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("sms")}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-sm py-1.5 transition-colors cursor-pointer",
+                    authMethod === "sms"
+                      ? "bg-card text-foreground font-semibold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  <span>{t("init.step2.code_option", "手机验证码登录")}</span>
+                </button>
               </div>
 
-              {authCodeSent ? (
-                <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="auth-code" className="text-xs font-medium text-foreground">
-                      {t("init.step2.code_label")}
-                    </Label>
-                    <Input
-                      id="auth-code"
-                      value={authCode}
-                      onChange={event => setAuthCode(event.target.value)}
-                      placeholder={t("init.step2.code_placeholder")}
-                      className="font-mono text-sm"
-                    />
+              {authMethod === "tdl" ? (
+                <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-5 text-center">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <QrCode className="h-6 w-6" />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="auth-password" className="text-xs font-medium text-foreground">
-                      {t("init.step2.password_label")}
-                    </Label>
-                    <Input
-                      id="auth-password"
-                      type="password"
-                      value={authPassword}
-                      onChange={event => setAuthPassword(event.target.value)}
-                      placeholder={t("init.step2.password_placeholder")}
-                      className="font-mono text-sm"
-                    />
+                  <div className="space-y-1 text-xs">
+                    <p className="font-semibold text-foreground">
+                      使用 Telegram 手机端直接扫码或导入桌面会话
+                    </p>
+                    <p className="text-muted-foreground">
+                      无需等待验证码短信，点击下方按钮即可开始极速授权。
+                    </p>
                   </div>
+                  <Button
+                    type="button"
+                    onClick={() => setShowTdlModal(true)}
+                    className="w-full h-10 font-semibold"
+                  >
+                    <QrCode className="h-4 w-4 mr-1.5" />
+                    <span>打开扫码登录窗口</span>
+                  </Button>
                 </div>
-              ) : null}
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="auth-phone" className="text-xs font-medium text-foreground">
+                      {t("init.step2.phone_label")}
+                    </Label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                        <Phone className="h-4 w-4" />
+                      </div>
+                      <Input
+                        id="auth-phone"
+                        value={authPhoneNumber}
+                        onChange={event => setAuthPhoneNumber(event.target.value)}
+                        placeholder={t("init.step2.phone_placeholder")}
+                        className="pl-9 font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {authCodeSent ? (
+                    <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="auth-code" className="text-xs font-medium text-foreground">
+                          {t("init.step2.code_label")}
+                        </Label>
+                        <Input
+                          id="auth-code"
+                          value={authCode}
+                          onChange={event => setAuthCode(event.target.value)}
+                          placeholder={t("init.step2.code_placeholder")}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor="auth-password"
+                          className="text-xs font-medium text-foreground"
+                        >
+                          {t("init.step2.password_label")}
+                        </Label>
+                        <Input
+                          id="auth-password"
+                          type="password"
+                          value={authPassword}
+                          onChange={event => setAuthPassword(event.target.value)}
+                          placeholder={t("init.step2.password_placeholder")}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               {authIdentity ? (
                 <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-700 dark:text-emerald-400">
@@ -249,6 +314,19 @@ export function InitPage() {
               ) : null}
             </div>
           </AppSectionCard>
+
+          <TdlLoginDialog
+            open={showTdlModal}
+            onClose={() => setShowTdlModal(false)}
+            onSuccess={() => {
+              setFormField("apiId", form.apiId || "15055931")
+              setFormField("apiHash", form.apiHash || "021d433426cbb920eeb95164498fe3d3")
+              useConfigStore.setState({
+                authSession: "tdl_session",
+                authIdentity: "TDL 账号已授权登录",
+              })
+            }}
+          />
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <Button variant="outline" onClick={() => setInitStep(1)} className="h-10 px-4">

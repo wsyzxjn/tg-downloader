@@ -208,3 +208,48 @@ export async function testOpenList(payload: {
   })
   return (await parseApiJson(response)) as unknown as import("@/types/app").OpenListTestResponse
 }
+
+export async function startTdlQrLogin(): Promise<import("@/types/app").TdlQrLoginResponse> {
+  const response = await fetch("/api/tdl/login/qr/start", {
+    method: "POST",
+  })
+  return (await parseApiJson(response)) as unknown as import("@/types/app").TdlQrLoginResponse
+}
+
+export async function getTdlQrLoginStatus(): Promise<import("@/types/app").TdlQrLoginResponse> {
+  const response = await fetch("/api/tdl/login/qr/status")
+  return (await parseApiJson(response)) as unknown as import("@/types/app").TdlQrLoginResponse
+}
+
+export async function submitTdl2faPassword(
+  password: string
+): Promise<import("@/types/app").TdlQrLoginResponse> {
+  const response = await fetch("/api/tdl/login/qr/password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  })
+  return (await parseApiJson(response)) as unknown as import("@/types/app").TdlQrLoginResponse
+}
+
+export async function cancelTdlQrLogin(): Promise<void> {
+  await fetch("/api/tdl/login/qr/cancel", {
+    method: "POST",
+  })
+}
+
+export async function importTdlDesktopSession(payload: {
+  desktopPath?: string
+  passcode?: string
+}): Promise<{ ok: boolean; message: string }> {
+  const response = await fetch("/api/tdl/login/desktop", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+  return (await parseApiJson(response)) as unknown as { ok: boolean; message: string }
+}
